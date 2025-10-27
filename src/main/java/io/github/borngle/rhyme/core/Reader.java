@@ -1,4 +1,4 @@
-/*********************************************************************
+/**
  * @file        Reader.java
  * @author      Aidan
  * @date        24-10-2025
@@ -9,7 +9,7 @@
  * @note        None
  *
  * @references  None
- *********************************************************************/
+ **/
 
 package io.github.borngle.rhyme.core;
 
@@ -35,6 +35,19 @@ public class Reader {
         }
     }
 
+    /**
+     * @brief       Reads a MIDI file in, parses events, and creates a
+     *              Music object
+     *
+     * @details     Iterates through the MIDI sequence and recognises note
+     *              events, creating Note objects which make up a Music object
+     *
+     * @param file  The input MIDI file
+     * @return      A Music object, which contains the sequence of notes
+     *              that are played in the song
+     *
+     * @note        None
+     **/
     public static Music read(File file) {
         try {
             Sequence sequence = MidiSystem.getSequence(file); // Load MIDI

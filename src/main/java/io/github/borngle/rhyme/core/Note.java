@@ -1,4 +1,4 @@
-/*********************************************************************
+/**
  * @file        Note.java
  * @author      Aidan
  * @date        24-10-2025
@@ -9,7 +9,7 @@
  * @note        All timing is considered in ticks
  *
  * @references  None
- *********************************************************************/
+ **/
 
 package io.github.borngle.rhyme.core;
 
@@ -57,6 +57,21 @@ public class Note {
         this.duration = duration;
     }
 
+    /**
+     * @brief         Gets all the possible fret positions a note can be
+     *                played at
+     *
+     * @details       Takes in a tuning in pitch values, and for each string
+     *                evaluates the difference between the given pitch and
+     *                the string pitch, ignoring negative values or values
+     *                greater than the guitar standard of 24 frets
+     *
+     * @param tuning  The input guitar tuning
+     * @return        A map of fret positions for each string
+     *
+     * @note          This is compatible with any tuning and instruments with a
+     *                varying number of strings
+     **/
     public Map<Integer, Integer> getFretPositions(int[] tuning) {
         Map<Integer, Integer> fretPositions = new HashMap<>(); // String is key and fret is value
         for(int i = 0; i < tuning.length; i++) {

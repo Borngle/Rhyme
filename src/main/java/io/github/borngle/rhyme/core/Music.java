@@ -1,4 +1,4 @@
-/*********************************************************************
+/**
  * @file        Music.java
  * @author      Aidan
  * @date        24-10-2025
@@ -9,7 +9,7 @@
  * @note        All timing is considered in ticks
  *
  * @references  None
- *********************************************************************/
+ **/
 
 package io.github.borngle.rhyme.core;
 
