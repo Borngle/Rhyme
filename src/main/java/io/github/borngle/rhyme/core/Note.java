@@ -79,14 +79,26 @@ public class Note {
             if(fret < 0 || fret > 24) { // Impossible or exceeds fret limit of 24
                 continue;
             }
-            fretPositions.put(tuning.length - i, fret);
+            fretPositions.put(i + 1, fret);
         }
         return fretPositions;
+    }
+
+    public String getActualNote() {
+        return notes[this.pitch % 12];
+    }
+
+    public int getActualOctave() {
+        return this.pitch / 12 - 1;
+    }
+
+    public int getBar(int resolution, int timeSignature) {
+        return (int) (this.start / (resolution * timeSignature) + 1); // Bars start from 1
     }
 
     @Override
     public String toString() {
         // Actual note and octave
-        return notes[this.pitch % 12] + (this.pitch / 12 - 1);
+        return this.getActualNote() + this.getActualOctave();
     }
 }
