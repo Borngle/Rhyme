@@ -1,15 +1,13 @@
 /**
- * @file        Main.java
- * @author      Aidan
- * @date        24-10-2025
- * @brief       Entry point into the program
+ * File: Main.java
  *
- * @details     Sequentially executes the steps required to transcribe a MIDI file to tablature format
- *              and outputs the resulting tablature
+ * <p>Brief: Entry point into the program.</p>
  *
- * @note        None
+ * <p>Details: Sequentially executes the steps required to transcribe a MIDI file to tablature format
+ * and outputs the resulting tablature.</p>
  *
- * @references  None
+ * @author Aidan
+ * @since  24-10-2025
  **/
 
 package io.github.borngle.rhyme.core;
@@ -22,7 +20,7 @@ import java.util.Map;
 public class Main {
     public static void main(String[] args) {
         // Testing
-        String songName = "Drake Nick — River Man [MIDIfind.com].mid";
+        String songName = "Drake Nick — Day Is Done [MIDIfind.com].mid";
         File song = new File("midi/" + songName);
         int resolution = Reader.getResolution(song);
         int[] timeSignature = Reader.getTimeSignature(song);
@@ -38,6 +36,7 @@ public class Main {
             tablature.addNote(notes.get(i), tablatureString, fretPositions.get(tablatureString));
         }
         String songTablature = TypeSetter.render(tablature, resolution, timeSignature);
-        TypeSetter.output(songName, timeSignature, songTablature);
+        TypeSetter.print(songName, timeSignature, songTablature);
+        //TypeSetter.writeFile(songName, timeSignature, songTablature);
     }
 }

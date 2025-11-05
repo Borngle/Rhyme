@@ -1,16 +1,14 @@
 /**
- * @file        Tablature.java
- * @author      Aidan
- * @date        28-10-2025
- * @brief       A representation of a song through a collection of TablatureNote objects
- *              and its tuning
+ * File: Tablature.java
  *
- * @details     TablatureNote is an inner class of Tablature which groups a Note with the
- *              selected string and fret
+ * <p>Brief: A representation of a song through a collection of {@link TablatureNote}
+ * objects and its {@code tuning}.</p>
  *
- * @note        None
+ * <p>Details: {@link TablatureNote} is an inner class of {@link Tablature}
+ * which groups a {@link Note} with the selected {@code stringIndex} and {@code fret}.</p>
  *
- * @references  None
+ * @author Aidan
+ * @since  28-10-2025
  **/
 
 package io.github.borngle.rhyme.core;
@@ -81,16 +79,15 @@ public class Tablature {
     }
 
     /**
-     * @brief                Sections a bar from a Tablature
+     * Sections a bar from {@code notes} in a {@link Tablature}.
      *
-     * @details              Finds all the notes within a bar and returns those notes
+     * <p>Finds all the notes within a bar and returns an {@code ArrayList} of those notes.</p>
      *
-     * @param barNumber      The bar being looked at
-     * @param resolution     The song resolution
-     * @param timeSignature  The song time signature
-     * @return               An ArrayList of TablatureNote objects in the given bar
-     *
-     * @note                 None
+     * @param barNumber      the bar being looked at
+     * @param resolution     the song resolution
+     * @param timeSignature  the song time signature
+     * @return               an {@code ArrayList} of {@link TablatureNote}
+     *                       objects in the given bar
      **/
     public ArrayList<TablatureNote> getBar(int barNumber, int resolution, int[] timeSignature) {
         ArrayList<TablatureNote> bar = new ArrayList<>();

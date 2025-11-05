@@ -1,14 +1,12 @@
 /**
- * @file        Note.java
- * @author      Aidan
- * @date        24-10-2025
- * @brief       Represents a note in a song
+ * File: Note.java
  *
- * @details     None
+ * <p>Brief: Represents a note in a song.</p>
  *
- * @note        All timing is considered in ticks
+ * <p>Note: All timing is considered in ticks.</p>
  *
- * @references  None
+ * @author Aidan
+ * @since  24-10-2025
  **/
 
 package io.github.borngle.rhyme.core;
@@ -58,25 +56,25 @@ public class Note {
     }
 
     /**
-     * @brief         Gets all the possible fret positions a note can be
-     *                played at
+     * Gets all the possible fret positions a note can be
+     * played at.
      *
-     * @details       Takes in a tuning in pitch values, and for each string
-     *                evaluates the difference between the given pitch and
-     *                the string pitch, ignoring negative values or values
-     *                greater than the guitar standard of 24 frets
+     * <p>Takes in a {@code tuning} in pitch values, and for each string
+     * evaluates the difference between the given pitch and
+     * the string pitch, ignoring negative values or values
+     * greater than the guitar standard of 24 frets.</p>
      *
-     * @param tuning  The input guitar tuning
-     * @return        A map of fret positions for each string
+     * <p>This is compatible with any tuning and instruments with a
+     * varying number of strings.</p>
      *
-     * @note          This is compatible with any tuning and instruments with a
-     *                varying number of strings
+     * @param tuning  the input guitar tuning
+     * @return        a {@code Map} of fret positions for each string
      **/
     public Map<Integer, Integer> getFretPositions(int[] tuning) {
         Map<Integer, Integer> fretPositions = new HashMap<>(); // String is key and fret is value
         for(int i = 0; i < tuning.length; i++) {
             int fret = this.pitch - tuning[i];
-            if(fret < 0 || fret > 24) { // Impossible or exceeds fret limit of 24
+            if(fret < 0 || fret > 12) { // Impossible or exceeds fret limit of 24
                 continue;
             }
             fretPositions.put(i + 1, fret);

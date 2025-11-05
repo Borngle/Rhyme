@@ -1,15 +1,13 @@
 /**
- * @file        Reader.java
- * @author      Aidan
- * @date        24-10-2025
- * @brief       Utility class providing functions for parsing MIDI file data
+ * File: Reader.java
  *
- * @details     Separates MIDI events from a song into Note objects, and fetches
- *              additional song metadata
+ * <p>Brief: Utility class providing functions for parsing MIDI file data.</p>
  *
- * @note        None
+ * <p>Details: Separates MIDI events from a song into {@link Note} objects, and
+ * fetches additional song metadata.</p>
  *
- * @references  None
+ * @author Aidan
+ * @since  24-10-2025
  **/
 
 package io.github.borngle.rhyme.core;
@@ -23,16 +21,12 @@ import javax.sound.midi.*;
 
 public class Reader {
     /**
-     * @brief       Reads a MIDI file in, parses events, and returns a collection of
-     *              Note objects
+     * Reads a MIDI file in, parses events, and returns a collection of {@link Note} objects.
      *
-     * @details     Iterates through the MIDI sequence and recognises note
-     *              events
+     * <p>It iterates through the MIDI sequence and recognises note events.</p>
      *
-     * @param song  The input MIDI file
-     * @return      An ArrayList of Note objects in sequence
-     *
-     * @note        None
+     * @param song  the input MIDI file
+     * @return      an {@code ArrayList} of {@link Note} objects in sequence
      **/
     public static ArrayList<Note> readSong(File song) {
         Sequence sequence;
@@ -74,14 +68,10 @@ public class Reader {
     }
 
     /**
-     * @brief       Reads a MIDI file in and gets the resolution
+     * Reads a MIDI file in and gets the resolution.
      *
-     * @details     None
-     *
-     * @param song  The input MIDI file
-     * @return      The song resolution (ticks per quarter note)
-     *
-     * @note        None
+     * @param song  the input MIDI file
+     * @return      the song resolution (ticks per quarter note)
      **/
     public static int getResolution(File song) {
         int resolution;
@@ -95,14 +85,10 @@ public class Reader {
     }
 
     /**
-     * @brief       Reads a MIDI file in and gets the time signature
+     * Reads a MIDI file in and gets the time signature.
      *
-     * @details     None
-     *
-     * @param song  The input MIDI file
-     * @return      The time signature (beats per bar)
-     *
-     * @note        None
+     * @param song  the input MIDI file
+     * @return      the time signature (beats per bar)
      **/
     public static int[] getTimeSignature(File song) {
         Sequence sequence;
