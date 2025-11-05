@@ -84,21 +84,24 @@ public class Note {
         return fretPositions;
     }
 
-    public String getActualNote() {
-        return notes[this.pitch % 12];
+    public static String getActualNote(int pitch) {
+        return notes[pitch % 12];
     }
 
     public int getActualOctave() {
         return this.pitch / 12 - 1;
     }
 
-    public int getBar(int resolution, int timeSignature) {
-        return (int) (this.start / (resolution * timeSignature) + 1); // Bars start from 1
+    public int getBar(int resolution, int[] timeSignature) {
+        int numerator = timeSignature[0];
+        int denominator = timeSignature[1];
+        double ticksPerBar = resolution * (4.0 / denominator) * numerator;
+        return (int) (this.start / ticksPerBar) + 1; // Bars start from 1
     }
 
     @Override
     public String toString() {
         // Actual note and octave
-        return this.getActualNote() + this.getActualOctave();
+        return getActualNote(this.pitch) + this.getActualOctave();
     }
 }

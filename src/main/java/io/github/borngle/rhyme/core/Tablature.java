@@ -92,7 +92,7 @@ public class Tablature {
      *
      * @note                 None
      **/
-    public ArrayList<TablatureNote> getBar(int barNumber, int resolution, int timeSignature) {
+    public ArrayList<TablatureNote> getBar(int barNumber, int resolution, int[] timeSignature) {
         ArrayList<TablatureNote> bar = new ArrayList<>();
         for(int i = 0; i < this.notes.size(); i++) {
             if(this.notes.get(i).getNote().getBar(resolution, timeSignature) == barNumber) {

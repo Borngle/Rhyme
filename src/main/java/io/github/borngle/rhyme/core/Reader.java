@@ -104,7 +104,7 @@ public class Reader {
      *
      * @note        None
      **/
-    public static int getTimeSignature(File file) {
+    public static int[] getTimeSignature(File file) {
         Sequence sequence;
         try {
             sequence = MidiSystem.getSequence(file);
@@ -112,7 +112,6 @@ public class Reader {
         catch (InvalidMidiDataException | IOException e) {
             throw new RuntimeException(e);
         }
-        int timeSignature = 4; // Default is 4/4
         Track[] tracks = sequence.getTracks();
         for (int i = 0; i < tracks.length; i++) {
             for (int j = 0; j < tracks[i].size(); j++) {
@@ -122,11 +121,14 @@ public class Reader {
                     MetaMessage metaMessage = (MetaMessage) message;
                     if (metaMessage.getType() == 0x58) { // Time signature
                         byte[] data = metaMessage.getData();
-                        timeSignature = data[0];
+                        int numerator = data[0] & 0xFF; // Beats per bar
+                        // Denominator is a power of 2
+                        int denominator = (int) Math.pow(2, data[1] & 0xFF); // Note value that gets a beat, e.g., 4 or 8
+                        return new int[]{numerator, denominator};
                     }
                 }
             }
         }
-        return timeSignature;
+        return new int[] {4, 4}; // Default is 4/4
     }
 }
