@@ -1,15 +1,13 @@
-/*********************************************************************
- * @file        TypeSetter.java
- * @author      Aidan
- * @date        29-10-2025
- * @brief       Converts a Tablature object into ASCII format
+/**
+ * File: TypeSetter.java
  *
- * @details     None
+ * <p>Brief: Converts a {@link Tablature} object into ASCII format.</p>
  *
- * @note        None
+ * <p>Details: Provides functions for generating and outputting a guitar tablature.</p>
  *
- * @references  None
- *********************************************************************/
+ * @author Aidan
+ * @since  29-10-2025
+ **/
 
 package io.github.borngle.rhyme.core;
 
@@ -23,8 +21,93 @@ A|--0---0-----0--|
 E|0----0---0-0---|
  */
 
-public class TypeSetter {
-    public static void render(Tablature tablature, int resolution, int timeSignature) {
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.*;
 
+public class TypeSetter {
+    /**
+     * Builds and returns a {@code String} tablature.
+     *
+     * <p>Creates tablatures bar by bar and merges them at the end.</p>
+     *
+     * @param tablature     the {@link Tablature} object
+     * @param resolution    the song resolution
+     * @param timeSignature the song time signature
+     * @return              a formatted {@code String} tablature
+     **/
+    public static String render(Tablature tablature, int resolution, int[] timeSignature) {
+        int totalBars = tablature.getNotes().getLast().getNote().getBar(resolution, timeSignature);
+        // 4 / denominator converts denominator note value to quarter note value
+        int ticksPerBar = (int) (resolution * ((4.0 / timeSignature[1]) * timeSignature[0]));
+        int ticksPerSubdivision = resolution / 8; // 1/32nd notes (8 per quarter)
+        int subdivisions = ticksPerBar / ticksPerSubdivision;
+        StringBuilder finalTablature = new StringBuilder();
+        for (int i = 0; i < totalBars; i++) {
+            int barStartTick = i * ticksPerBar; // Tick position of first beat of bar
+            ArrayList<Tablature.TablatureNote> bar = tablature.getBar(i + 1, resolution, timeSignature);
+            String[][] barTablature = new String[tablature.getTuning().length][subdivisions];
+            for (String[] strings : barTablature) {
+                Arrays.fill(strings, "--");
+            }
+            for(int j = 0; j < bar.size(); j++) {
+                Tablature.TablatureNote tablatureNote = bar.get(j);
+                int ticksIntoBar = (int) (tablatureNote.getNote().getStart() - barStartTick);
+                double fractionOfBar = (double) ticksIntoBar / ticksPerBar;
+                int gridPosition = (int) Math.floor(fractionOfBar * subdivisions) + 2; // + 2 to account for string note and "|"
+                gridPosition = Math.min(gridPosition, subdivisions - 2); // Bounds check
+                String fret = String.valueOf(tablatureNote.getFret());
+                if (fret.length() < 2) { // Single digit fret, so needs an additional "-" to keep tablature width consistent
+                    fret = fret + "-";
+                }
+                barTablature[tablatureNote.getStringIndex() - 1][gridPosition] = fret;
+            }
+            for(int k = 0; k < tablature.getTuning().length; k++) { // Formatting tablature (tuning and pipe symbols)
+                barTablature[k][0] = Note.getActualNote(tablature.getTuning()[k]);
+                barTablature[k][1] = "|";
+                barTablature[k][subdivisions - 1] = "|";
+            }
+            for(int l = 0; l < barTablature.length; l++) { // Building bar tablature
+                for(int m = 0; m < barTablature[l].length; m++) {
+                    finalTablature.append(barTablature[l][m]);
+                }
+                finalTablature.append("\n");
+            }
+            if(i < totalBars - 1) { // Avoids additional newline at the end
+                finalTablature.append("\n");
+            }
+        }
+        return finalTablature.toString();
+    }
+
+    /**
+     * Outputs a {@code String} tablature.
+     *
+     * @param song      the song name
+     * @param timing    the song time signature
+     * @param tablature the song time signature
+     **/
+    public static void print(String song, int[] timing, String tablature) {
+        System.out.println("Song: " + song);
+        System.out.println("Timing: " + timing[0] + "/" + timing[1] + "\n");
+        System.out.println(tablature);
+    }
+
+    /**
+     * Writes a {@code String} tablature and song metadata to a file.
+     *
+     * <p>Uses {@code FileWriter} to create or overwrite a text file.</p>
+     *
+     * @param song      the song name
+     * @param timing    the song time signature
+     * @param tablature the song time signature
+     **/
+    public static void writeFile(String song, int[] timing, String tablature) {
+        try (FileWriter fileWriter = new FileWriter(song + ".txt", false)) {
+            fileWriter.write("Song: " + song + "\n" + "Timing: " + timing[0] + "/" + timing[1] + "\n\n" + tablature);
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -67,8 +67,8 @@ public class Note {
      * <p>This is compatible with any tuning and instruments with a
      * varying number of strings.</p>
      *
-     * @param tuning  the input guitar tuning
-     * @return        a {@code Map} of fret positions for each string
+     * @param tuning the input guitar tuning
+     * @return       a {@code Map} of fret positions for each string
      **/
     public Map<Integer, Integer> getFretPositions(int[] tuning) {
         Map<Integer, Integer> fretPositions = new HashMap<>(); // String is key and fret is value

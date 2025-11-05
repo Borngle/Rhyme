@@ -37,6 +37,6 @@ public class Main {
         }
         String songTablature = TypeSetter.render(tablature, resolution, timeSignature);
         TypeSetter.print(songName, timeSignature, songTablature);
-        //TypeSetter.writeFile(songName, timeSignature, songTablature);
+        TypeSetter.writeFile(songName, timeSignature, songTablature);
     }
 }
