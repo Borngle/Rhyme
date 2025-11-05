@@ -22,20 +22,22 @@ import java.util.Map;
 public class Main {
     public static void main(String[] args) {
         // Testing
-        File song = new File("midi/Jansch Bert — Tinker's Blues [MIDIfind.com].mid");
+        String songName = "Drake Nick — River Man [MIDIfind.com].mid";
+        File song = new File("midi/" + songName);
         int resolution = Reader.getResolution(song);
-        int timeSignature = Reader.getTimeSignature(song);
-        int[] dropD = new int[]{64, 59, 55, 50, 45, 38}; // Strings 1 to 6 - high to low
+        int[] timeSignature = Reader.getTimeSignature(song);
+        int[] eStandard = new int[]{64, 59, 55, 50, 45, 40}; // Strings 1 to 6 - high to low
         ArrayList<Note> notes = Reader.readSong(song);
-        Tablature tablature = new Tablature(dropD);
+        Tablature tablature = new Tablature(eStandard);
         for(int i = 0; i < notes.size(); i++) {
-            Map<Integer, Integer> fretPositions =  notes.get(i).getFretPositions(dropD);
+            Map<Integer, Integer> fretPositions =  notes.get(i).getFretPositions(eStandard);
             int tablatureString = 0;
             for(Integer string : fretPositions.keySet()) {
                 tablatureString = string;
             }
             tablature.addNote(notes.get(i), tablatureString, fretPositions.get(tablatureString));
         }
-        TypeSetter.render(tablature, resolution, timeSignature);
+        String songTablature = TypeSetter.render(tablature, resolution, timeSignature);
+        TypeSetter.output(songName, timeSignature, songTablature);
     }
 }

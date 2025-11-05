@@ -29,16 +29,16 @@ public class Reader {
      * @details     Iterates through the MIDI sequence and recognises note
      *              events
      *
-     * @param file  The input MIDI file
+     * @param song  The input MIDI file
      * @return      An ArrayList of Note objects in sequence
      *
      * @note        None
      **/
-    public static ArrayList<Note> readSong(File file) {
+    public static ArrayList<Note> readSong(File song) {
         Sequence sequence;
         ArrayList<Note> notes = new ArrayList<>();
         try {
-            sequence = MidiSystem.getSequence(file); // Load MIDI
+            sequence = MidiSystem.getSequence(song); // Load MIDI
         }
         catch (InvalidMidiDataException | IOException e) {
             throw new RuntimeException(e);
@@ -78,15 +78,15 @@ public class Reader {
      *
      * @details     None
      *
-     * @param file  The input MIDI file
+     * @param song  The input MIDI file
      * @return      The song resolution (ticks per quarter note)
      *
      * @note        None
      **/
-    public static int getResolution(File file) {
+    public static int getResolution(File song) {
         int resolution;
         try {
-            resolution = MidiSystem.getSequence(file).getResolution();
+            resolution = MidiSystem.getSequence(song).getResolution();
         }
         catch (InvalidMidiDataException | IOException e) {
             throw new RuntimeException(e);
@@ -99,15 +99,15 @@ public class Reader {
      *
      * @details     None
      *
-     * @param file  The input MIDI file
+     * @param song  The input MIDI file
      * @return      The time signature (beats per bar)
      *
      * @note        None
      **/
-    public static int[] getTimeSignature(File file) {
+    public static int[] getTimeSignature(File song) {
         Sequence sequence;
         try {
-            sequence = MidiSystem.getSequence(file);
+            sequence = MidiSystem.getSequence(song);
         }
         catch (InvalidMidiDataException | IOException e) {
             throw new RuntimeException(e);
