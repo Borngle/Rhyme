@@ -18,12 +18,16 @@ import java.util.ArrayList;
 import java.util.Map;
 
 public class Main {
+    // For the song being transcribed
+    static int resolution;
+    static int[] timeSignature;
+
     public static void main(String[] args) {
         // Testing
         String songName = "Drake Nick — Day Is Done [MIDIfind.com].mid";
         File song = new File("midi/" + songName);
-        int resolution = Reader.getResolution(song);
-        int[] timeSignature = Reader.getTimeSignature(song);
+        resolution = Reader.getResolution(song);
+        timeSignature = Reader.getTimeSignature(song);
         int[] eStandard = new int[]{64, 59, 55, 50, 45, 40}; // Strings 1 to 6 - high to low
         ArrayList<Note> notes = Reader.readSong(song);
         Tablature tablature = new Tablature(eStandard);
@@ -35,8 +39,9 @@ public class Main {
             }
             tablature.addNote(notes.get(i), tablatureString, fretPositions.get(tablatureString));
         }
-        String songTablature = TypeSetter.render(tablature, resolution, timeSignature);
-        TypeSetter.print(songName, timeSignature, songTablature);
-        TypeSetter.writeFile(songName, timeSignature, songTablature);
+        String songTablature = TypeSetter.render(tablature);
+        TypeSetter.print(songName, songTablature);
+        TypeSetter.writeFile(songName, songTablature);
+        Optimiser optimiser = new Optimiser(100, notes, 0.6, 0.07);
     }
 }

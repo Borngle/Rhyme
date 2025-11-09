@@ -84,15 +84,13 @@ public class Tablature {
      * <p>Finds all the notes within a bar and returns an {@code ArrayList} of those notes.</p>
      *
      * @param barNumber     the bar being looked at
-     * @param resolution    the song resolution
-     * @param timeSignature the song time signature
      * @return              an {@code ArrayList} of {@link TablatureNote}
      *                      objects in the given bar
      **/
-    public ArrayList<TablatureNote> getBar(int barNumber, int resolution, int[] timeSignature) {
+    public ArrayList<TablatureNote> getBar(int barNumber) {
         ArrayList<TablatureNote> bar = new ArrayList<>();
         for(int i = 0; i < this.notes.size(); i++) {
-            if(this.notes.get(i).getNote().getBar(resolution, timeSignature) == barNumber) {
+            if(this.notes.get(i).getNote().getBar() == barNumber) {
                 bar.add(this.notes.get(i));
             }
         }

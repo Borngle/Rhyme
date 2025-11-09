@@ -25,6 +25,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
+import static io.github.borngle.rhyme.core.Main.resolution;
+import static io.github.borngle.rhyme.core.Main.timeSignature;
+
 public class TypeSetter {
     /**
      * Builds and returns a {@code String} tablature.
@@ -32,12 +35,10 @@ public class TypeSetter {
      * <p>Creates tablatures bar by bar and merges them at the end.</p>
      *
      * @param tablature     the {@link Tablature} object
-     * @param resolution    the song resolution
-     * @param timeSignature the song time signature
      * @return              a formatted {@code String} tablature
      **/
-    public static String render(Tablature tablature, int resolution, int[] timeSignature) {
-        int totalBars = tablature.getNotes().getLast().getNote().getBar(resolution, timeSignature);
+    public static String render(Tablature tablature) {
+        int totalBars = tablature.getNotes().getLast().getNote().getBar();
         // 4 / denominator converts denominator note value to quarter note value
         int ticksPerBar = (int) (resolution * ((4.0 / timeSignature[1]) * timeSignature[0]));
         int ticksPerSubdivision = resolution / 8; // 1/32nd notes (8 per quarter)
@@ -45,7 +46,7 @@ public class TypeSetter {
         StringBuilder finalTablature = new StringBuilder();
         for (int i = 0; i < totalBars; i++) {
             int barStartTick = i * ticksPerBar; // Tick position of first beat of bar
-            ArrayList<Tablature.TablatureNote> bar = tablature.getBar(i + 1, resolution, timeSignature);
+            ArrayList<Tablature.TablatureNote> bar = tablature.getBar(i + 1);
             String[][] barTablature = new String[tablature.getTuning().length][subdivisions];
             for (String[] strings : barTablature) {
                 Arrays.fill(strings, "--");
@@ -84,12 +85,11 @@ public class TypeSetter {
      * Outputs a {@code String} tablature.
      *
      * @param song      the song name
-     * @param timing    the song time signature
-     * @param tablature the song time signature
+     * @param tablature the song tablature
      **/
-    public static void print(String song, int[] timing, String tablature) {
+    public static void print(String song, String tablature) {
         System.out.println("Song: " + song);
-        System.out.println("Timing: " + timing[0] + "/" + timing[1] + "\n");
+        System.out.println("Timing: " + timeSignature[0] + "/" + timeSignature[1] + "\n");
         System.out.println(tablature);
     }
 
@@ -99,12 +99,11 @@ public class TypeSetter {
      * <p>Uses {@code FileWriter} to create or overwrite a text file.</p>
      *
      * @param song      the song name
-     * @param timing    the song time signature
-     * @param tablature the song time signature
+     * @param tablature the song tablature
      **/
-    public static void writeFile(String song, int[] timing, String tablature) {
+    public static void writeFile(String song, String tablature) {
         try (FileWriter fileWriter = new FileWriter(song + ".txt", false)) {
-            fileWriter.write("Song: " + song + "\n" + "Timing: " + timing[0] + "/" + timing[1] + "\n\n" + tablature);
+            fileWriter.write("Song: " + song + "\n" + "Timing: " + timeSignature[0] + "/" + timeSignature[1] + "\n\n" + tablature);
         }
         catch (IOException e) {
             e.printStackTrace();

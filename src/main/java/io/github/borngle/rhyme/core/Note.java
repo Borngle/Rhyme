@@ -14,6 +14,9 @@ package io.github.borngle.rhyme.core;
 import java.util.HashMap;
 import java.util.Map;
 
+import static io.github.borngle.rhyme.core.Main.resolution;
+import static io.github.borngle.rhyme.core.Main.timeSignature;
+
 public class Note {
     final static String[] notes = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
 
@@ -90,7 +93,7 @@ public class Note {
         return this.pitch / 12 - 1;
     }
 
-    public int getBar(int resolution, int[] timeSignature) {
+    public int getBar() {
         int numerator = timeSignature[0];
         int denominator = timeSignature[1];
         double ticksPerBar = resolution * (4.0 / denominator) * numerator;
