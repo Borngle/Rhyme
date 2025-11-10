@@ -8,7 +8,7 @@
  * which groups a {@link Note} with the selected {@code stringIndex} and {@code fret}.</p>
  *
  * @author Aidan
- * @since  28-10-2025
+ * @since 28-10-2025
  **/
 
 package io.github.borngle.rhyme.core;
@@ -83,9 +83,9 @@ public class Tablature {
      *
      * <p>Finds all the notes within a bar and returns an {@code ArrayList} of those notes.</p>
      *
-     * @param barNumber     the bar being looked at
-     * @return              an {@code ArrayList} of {@link TablatureNote}
-     *                      objects in the given bar
+     * @param barNumber the bar being looked at
+     * @return an {@code ArrayList} of {@link TablatureNote}
+     * objects in the given bar
      **/
     public ArrayList<TablatureNote> getBar(int barNumber) {
         ArrayList<TablatureNote> bar = new ArrayList<>();

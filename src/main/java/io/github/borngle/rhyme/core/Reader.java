@@ -7,7 +7,7 @@
  * fetches additional song metadata.</p>
  *
  * @author Aidan
- * @since  24-10-2025
+ * @since 24-10-2025
  **/
 
 package io.github.borngle.rhyme.core;
@@ -26,7 +26,7 @@ public class Reader {
      * <p>It iterates through the MIDI sequence and recognises note events.</p>
      *
      * @param song the input MIDI file
-     * @return     an {@code ArrayList} of {@link Note} objects in sequence
+     * @return an {@code ArrayList} of {@link Note} objects in sequence
      **/
     public static ArrayList<Note> readSong(File song) {
         Sequence sequence;
@@ -71,7 +71,7 @@ public class Reader {
      * Reads a MIDI file in and gets the resolution.
      *
      * @param song the input MIDI file
-     * @return     the song resolution (ticks per quarter note)
+     * @return the song resolution (ticks per quarter note)
      **/
     public static int getResolution(File song) {
         int resolution;
@@ -88,7 +88,7 @@ public class Reader {
      * Reads a MIDI file in and gets the time signature.
      *
      * @param song the input MIDI file
-     * @return     the time signature (beats per bar)
+     * @return the time signature (beats per bar)
      **/
     public static int[] getTimeSignature(File song) {
         Sequence sequence;

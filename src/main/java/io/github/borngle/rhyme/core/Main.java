@@ -7,7 +7,7 @@
  * and outputs the resulting tablature.</p>
  *
  * @author Aidan
- * @since  24-10-2025
+ * @since 24-10-2025
  **/
 
 package io.github.borngle.rhyme.core;

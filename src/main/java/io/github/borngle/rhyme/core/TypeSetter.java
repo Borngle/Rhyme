@@ -6,7 +6,7 @@
  * <p>Details: Provides functions for generating and outputting a guitar tablature.</p>
  *
  * @author Aidan
- * @since  29-10-2025
+ * @since 29-10-2025
  **/
 
 package io.github.borngle.rhyme.core;
@@ -34,8 +34,8 @@ public class TypeSetter {
      *
      * <p>Creates tablatures bar by bar and merges them at the end.</p>
      *
-     * @param tablature     the {@link Tablature} object
-     * @return              a formatted {@code String} tablature
+     * @param tablature the {@link Tablature} object
+     * @return a formatted {@code String} tablature
      **/
     public static String render(Tablature tablature) {
         int totalBars = tablature.getNotes().getLast().getNote().getBar();
@@ -84,7 +84,7 @@ public class TypeSetter {
     /**
      * Outputs a {@code String} tablature.
      *
-     * @param song      the song name
+     * @param song the song name
      * @param tablature the song tablature
      **/
     public static void print(String song, String tablature) {
@@ -98,7 +98,7 @@ public class TypeSetter {
      *
      * <p>Uses {@code FileWriter} to create or overwrite a text file.</p>
      *
-     * @param song      the song name
+     * @param song the song name
      * @param tablature the song tablature
      **/
     public static void writeFile(String song, String tablature) {

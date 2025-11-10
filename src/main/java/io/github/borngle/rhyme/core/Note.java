@@ -6,7 +6,7 @@
  * <p>Note: All timing is considered in ticks.</p>
  *
  * @author Aidan
- * @since  24-10-2025
+ * @since 24-10-2025
  **/
 
 package io.github.borngle.rhyme.core;
@@ -71,7 +71,7 @@ public class Note {
      * varying number of strings.</p>
      *
      * @param tuning the input guitar tuning
-     * @return       a {@code Map} of fret positions for each string
+     * @return a {@code Map} of fret positions for each string
      **/
     public Map<Integer, Integer> getFretPositions(int[] tuning) {
         Map<Integer, Integer> fretPositions = new HashMap<>(); // String is key and fret is value

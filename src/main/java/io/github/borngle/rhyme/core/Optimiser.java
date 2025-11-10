@@ -4,7 +4,7 @@
  * <p>Brief: Uses a genetic algorithm to optimise the playability and accuracy of a {@link Tablature}.</p>
  *
  * @author Aidan
- * @since  05-11-2025
+ * @since 05-11-2025
  **/
 
 package io.github.borngle.rhyme.core;
