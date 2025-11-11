@@ -26,23 +26,23 @@ public class Reader {
      * <p>It iterates through the MIDI sequence and recognises note events.</p>
      *
      * @param song the input MIDI file
-     * @return an {@code ArrayList} of {@link Note} objects in sequence
+     * @return a 2D {@code ArrayList} of {@link Note} objects in sequence
      **/
-    public static ArrayList<Note> readSong(File song) {
+    public static ArrayList<ArrayList<Note>> readSong(File song) {
         Sequence sequence;
-        ArrayList<Note> notes = new ArrayList<>();
+        ArrayList<ArrayList<Note>> songTracks = new ArrayList<>();
         try {
             sequence = MidiSystem.getSequence(song); // Load MIDI
         }
         catch (InvalidMidiDataException | IOException e) {
             throw new RuntimeException(e);
         }
-        Track[] tracks = sequence.getTracks(); // Get all tracks from sequence
-        // TODO: MERGE OR SEPARATE TRACKS
-        for (int i = 0; i < tracks.length; i++) {
+        Track[] sequenceTracks = sequence.getTracks(); // Get all tracks from sequence
+        for (int i = 0; i < sequenceTracks.length; i++) {
+            ArrayList<Note> notes = new ArrayList<>();
             Map<Integer, Note> activeNotes = new HashMap<>(); // Tracks currently playing notes
-            for (int j = 0; j < tracks[i].size(); j++) {
-                MidiEvent event = tracks[i].get(j); // Get MidiEvent from track
+            for (int j = 0; j < sequenceTracks[i].size(); j++) {
+                MidiEvent event = sequenceTracks[i].get(j); // Get MidiEvent from track
                 MidiMessage message = event.getMessage(); // Get MidiMessage
                 long tick = event.getTick();
                 if (message instanceof ShortMessage) { // Refers to the channel and note
@@ -63,8 +63,11 @@ public class Reader {
                     }
                 }
             }
+            if(!notes.isEmpty()) {
+                songTracks.add(notes);
+            }
         }
-        return notes;
+        return songTracks;
     }
 
     /**

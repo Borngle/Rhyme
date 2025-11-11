@@ -24,24 +24,33 @@ public class Main {
 
     public static void main(String[] args) {
         // Testing
-        String songName = "Drake Nick — Day Is Done [MIDIfind.com].mid";
+        String songName = "Cohen Leonard — Suzanne [MIDIfind.com].mid";
         File song = new File("midi/" + songName);
         resolution = Reader.getResolution(song);
         timeSignature = Reader.getTimeSignature(song);
         int[] eStandard = new int[]{64, 59, 55, 50, 45, 40}; // Strings 1 to 6 - high to low
-        ArrayList<Note> notes = Reader.readSong(song);
-        Tablature tablature = new Tablature(eStandard);
-        for(int i = 0; i < notes.size(); i++) {
-            Map<Integer, Integer> fretPositions =  notes.get(i).getFretPositions(eStandard);
-            int tablatureString = 0;
-            for(Integer string : fretPositions.keySet()) {
-                tablatureString = string;
+        ArrayList<ArrayList<Note>> songTracks = Reader.readSong(song);
+        StringBuilder songTablature = new StringBuilder();
+        System.out.println("Song: " + songName);
+        System.out.println("Timing: " + timeSignature[0] + "/" + timeSignature[1]);
+        for(int i = 0; i < songTracks.size(); i++) {
+            if(songTracks.size() > 1) {
+                songTablature.append("\nTrack: ").append(i + 1).append("\n");
             }
-            tablature.addNote(notes.get(i), tablatureString, fretPositions.get(tablatureString));
+            ArrayList<Note> notes = songTracks.get(i);
+            Tablature tablature = new Tablature(eStandard);
+            for(int j = 0; j < notes.size(); j++) {
+                Map<Integer, Integer> fretPositions =  notes.get(j).getFretPositions(eStandard);
+                int tablatureString = 0;
+                for(Integer string : fretPositions.keySet()) {
+                    tablatureString = string;
+                }
+                tablature.addNote(notes.get(j), tablatureString, fretPositions.get(tablatureString));
+            }
+            songTablature.append(TypeSetter.render(tablature));
+            //Optimiser optimiser = new Optimiser(100, notes, 0.6, 0.07);
         }
-        String songTablature = TypeSetter.render(tablature);
-        TypeSetter.print(songName, songTablature);
-        TypeSetter.writeFile(songName, songTablature);
-        Optimiser optimiser = new Optimiser(100, notes, 0.6, 0.07);
+        System.out.println(songTablature);
+        TypeSetter.writeFile(songName, songTablature.toString());
     }
 }

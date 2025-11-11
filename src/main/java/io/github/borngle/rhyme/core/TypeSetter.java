@@ -44,6 +44,7 @@ public class TypeSetter {
         int ticksPerSubdivision = resolution / 8; // 1/32nd notes (8 per quarter)
         int subdivisions = ticksPerBar / ticksPerSubdivision;
         StringBuilder finalTablature = new StringBuilder();
+        // TODO: MAYBE IGNORE EMPTY BARS
         for (int i = 0; i < totalBars; i++) {
             int barStartTick = i * ticksPerBar; // Tick position of first beat of bar
             ArrayList<Tablature.TablatureNote> bar = tablature.getBar(i + 1);
@@ -79,18 +80,6 @@ public class TypeSetter {
             }
         }
         return finalTablature.toString();
-    }
-
-    /**
-     * Outputs a {@code String} tablature.
-     *
-     * @param song the song name
-     * @param tablature the song tablature
-     **/
-    public static void print(String song, String tablature) {
-        System.out.println("Song: " + song);
-        System.out.println("Timing: " + timeSignature[0] + "/" + timeSignature[1] + "\n");
-        System.out.println(tablature);
     }
 
     /**
