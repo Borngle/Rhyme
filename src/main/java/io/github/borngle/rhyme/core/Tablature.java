@@ -15,7 +15,7 @@ package io.github.borngle.rhyme.core;
 
 import java.util.ArrayList;
 
-public class Tablature {
+public class Tablature implements Comparable<Tablature> {
     class TablatureNote {
         private final Note note;
         private int stringIndex;
@@ -95,5 +95,10 @@ public class Tablature {
             }
         }
         return bar;
+    }
+
+    @Override
+    public int compareTo(Tablature other) {
+        return Optimiser.fitness(other) - Optimiser.fitness(this);
     }
 }

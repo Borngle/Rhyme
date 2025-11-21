@@ -59,7 +59,9 @@ public class Reader {
                     // velocity == 0 means note off
                     else if (command == ShortMessage.NOTE_OFF || command == ShortMessage.NOTE_ON && velocity == 0) {
                         Note note = activeNotes.remove(pitch);
-                        note.setDuration(tick - note.getStart());
+                        if (note != null) {
+                            note.setDuration(tick - note.getStart());
+                        }
                     }
                 }
             }

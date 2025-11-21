@@ -44,13 +44,15 @@ public class TypeSetter {
         int ticksPerSubdivision = resolution / 8; // 1/32nd notes (8 per quarter)
         int subdivisions = ticksPerBar / ticksPerSubdivision;
         StringBuilder finalTablature = new StringBuilder();
-        // TODO: MAYBE IGNORE EMPTY BARS
         for (int i = 0; i < totalBars; i++) {
             int barStartTick = i * ticksPerBar; // Tick position of first beat of bar
             ArrayList<Tablature.TablatureNote> bar = tablature.getBar(i + 1);
             String[][] barTablature = new String[tablature.getTuning().length][subdivisions];
             for (String[] strings : barTablature) {
                 Arrays.fill(strings, "--");
+            }
+            if(bar.isEmpty()) { // Ignore empty bars
+                continue;
             }
             for(int j = 0; j < bar.size(); j++) {
                 Tablature.TablatureNote tablatureNote = bar.get(j);

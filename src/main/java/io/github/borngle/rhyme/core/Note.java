@@ -85,14 +85,30 @@ public class Note {
         return fretPositions;
     }
 
+    /**
+     * Gets the musical note for a given pitch.
+     *
+     * @param pitch the input note pitch
+     * @return a {@code String} note name
+     **/
     public static String getActualNote(int pitch) {
         return notes[pitch % 12];
     }
 
+    /**
+     * Gets the musical octave of a {@link Note}.
+     *
+     * @return the octave number
+     **/
     public int getActualOctave() {
         return this.pitch / 12 - 1;
     }
 
+    /**
+     * Gets the bar the {@link Note} belongs to in the song.
+     *
+     * @return the bar number
+     **/
     public int getBar() {
         int numerator = timeSignature[0];
         int denominator = timeSignature[1];
