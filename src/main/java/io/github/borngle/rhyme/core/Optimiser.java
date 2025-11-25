@@ -97,7 +97,7 @@ public class Optimiser {
             }
             if(i != 0) {
                 // Higher string jumps and fret movements between consecutive notes has a higher penalty
-                score -= (Math.abs(tablatureNote.getFret() - tablatureNotes.get(i - 1).getFret()));
+                score -= (int) Math.pow((Math.abs(tablatureNote.getFret() - tablatureNotes.get(i - 1).getFret())), 2);
                 score -= (Math.abs(tablatureNote.getStringIndex() - tablatureNotes.get(i - 1).getStringIndex()));
             }
             int averageFretDistance = getAverageFretDistance(i, tablatureNotes);
@@ -107,7 +107,7 @@ public class Optimiser {
     }
 
     private static int getAverageFretDistance(int i, ArrayList<Tablature.TablatureNote> tablatureNotes) {
-        int surroundingNeighbours = 4;
+        int surroundingNeighbours = 7;
         int averageFretDistance; // From number of surrounding neighbours
         int start = Math.max(0, i - surroundingNeighbours / 2); // Always above start of array
         int end = Math.min(tablatureNotes.size() - 1, i + surroundingNeighbours / 2); // Always before end of array

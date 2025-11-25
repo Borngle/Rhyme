@@ -77,7 +77,7 @@ public class Note {
         Map<Integer, Integer> fretPositions = new HashMap<>(); // String is key and fret is value
         for(int i = 0; i < tuning.length; i++) {
             int fret = this.pitch - tuning[i];
-            if(fret < 0 || fret > 12) { // Impossible or exceeds fret limit of 24
+            if(fret < 0 || fret > 20) { // Impossible or exceeds fret limit of 20
                 continue;
             }
             fretPositions.put(i + 1, fret);
