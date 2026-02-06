@@ -9,10 +9,8 @@
 
 package io.github.borngle.rhyme.core;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
+import static io.github.borngle.rhyme.core.Main.*;
 
 /*
 Gene -> fret choice
@@ -51,16 +49,15 @@ public class Optimiser {
     }
 
     private Tablature generateGenome(ArrayList<Note> notes) {
-        int[] eStandard = new int[]{64, 59, 55, 50, 45, 40}; // Default tuning for now (testing)
-        Tablature tablature = new Tablature(eStandard);
-        Random rand = new Random();
+        int[] tuning = eStandard; // Default tuning for now (testing)
+        Tablature tablature = new Tablature(tuning);
         for(int i = 0; i < notes.size(); i++) {
-            Map<Integer, Integer> fretPositions =  notes.get(i).getFretPositions(eStandard);
+            Map<Integer, Integer> fretPositions = notes.get(i).getFretPositions(tuning);
             List<Map.Entry<Integer, Integer>> validEntries = fretPositions.entrySet()
                     .stream()
                     .filter(entry -> entry.getValue() != null)
                     .toList();
-            Map.Entry<Integer, Integer> randomEntry = validEntries.get(rand.nextInt(validEntries.size()));
+            Map.Entry<Integer, Integer> randomEntry = validEntries.get(random.nextInt(validEntries.size()));
             tablature.addNote(notes.get(i), randomEntry.getKey(), randomEntry.getValue());
         }
         return tablature;
@@ -147,10 +144,9 @@ public class Optimiser {
      **/
     public Tablature crossover(Tablature first, Tablature second) {
         // TODO: RESEARCH OTHER SELECTION METHODS (E.G., TOURNAMENT OR ROULETTE) AND TEST TWO-POINT CROSSOVER
-        Random random = new Random();
         int crossoverPoint = random.nextInt(first.getNotes().size());
         int bar = first.getNotes().get(crossoverPoint).getNote().getBar();
-        Tablature crossoverTablature = new Tablature(new int[]{64, 59, 55, 50, 45, 40});
+        Tablature crossoverTablature = new Tablature(first.getTuning());
         // Adds all notes from first up to the end of the random bar crossover point, then from second
         for(int i = 0; i < first.getNotes().size(); i++) {
             if(first.getNotes().get(i).getNote().getBar() < bar) {
@@ -169,6 +165,11 @@ public class Optimiser {
         return crossoverTablature;
     }
 
+    public void mutate(Tablature tablature) {
+        mutateNotes(tablature);
+        // TODO: MUTATE TUNING
+    }
+
     /**
      * Emulates mutation on a given {@link Tablature}.
      *
@@ -177,14 +178,16 @@ public class Optimiser {
      *
      * @param tablature the {@link Tablature} being mutated
      **/
-    public void mutate(Tablature tablature) {
+    public void mutateNotes(Tablature tablature) {
         ArrayList<Tablature.TablatureNote> tablatureNotes = tablature.getNotes();
-        Random random = new Random();
         for(int i = 0; i < tablatureNotes.size(); i++) {
             if(Math.random() < this.mutationRate) {
-                Map<Integer, Integer> fretPositions = tablatureNotes.get(i).getNote().getFretPositions(new int[]{64, 59, 55, 50, 45, 40});
+                Map<Integer, Integer> fretPositions = tablatureNotes.get(i).getNote().getFretPositions(tablature.getTuning());
                 List<Map.Entry<Integer, Integer>> validPositions = fretPositions.entrySet().stream()
                         .filter(entry -> entry.getValue() != null).toList();
+                if(validPositions.isEmpty()) {
+                    continue;
+                }
                 for(int attempts = 0; attempts < 5; attempts++) { // Mutation is random, but constrained so it produces decent results
                     Map.Entry<Integer, Integer> newPosition = validPositions.get(random.nextInt(validPositions.size()));
                     int newString = newPosition.getKey();

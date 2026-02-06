@@ -65,7 +65,7 @@ public class Note {
      * <p>Takes in a {@code tuning} in pitch values, and for each string
      * evaluates the difference between the given pitch and
      * the string pitch, ignoring negative values or values
-     * greater than the guitar standard of 24 frets.</p>
+     * greater than the guitar standard of 20 frets.</p>
      *
      * <p>This is compatible with any tuning and instruments with a
      * varying number of strings.</p>

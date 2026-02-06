@@ -67,7 +67,11 @@ public class TypeSetter {
                 barTablature[tablatureNote.getStringIndex() - 1][gridPosition] = fret;
             }
             for(int k = 0; k < tablature.getTuning().length; k++) { // Formatting tablature (tuning and pipe symbols)
-                barTablature[k][0] = Note.getActualNote(tablature.getTuning()[k]);
+                String note = Note.getActualNote(tablature.getTuning()[k]);
+                if(note.length() == 1) { // Accounting for shift caused by sharp notes
+                    note += " ";
+                }
+                barTablature[k][0] = note;
                 barTablature[k][1] = "|";
                 barTablature[k][subdivisions - 1] = "|";
             }
