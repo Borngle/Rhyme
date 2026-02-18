@@ -56,17 +56,18 @@ public class Main {
         ArrayList<ArrayList<Note>> songTracks = Reader.readSong(song);
         StringBuilder songTablature = new StringBuilder();
         for(int i = 0; i < songTracks.size(); i++) {
+            ArrayList<Note> track = songTracks.get(i);
             if(songTracks.size() > 1) {
-                songTablature.append("\nTrack: ").append(i + 1).append("\n");
+                songTablature.append("\nTrack: ").append(i + 1).append("\n"); // Formatting for multi-track songs
             }
-            Tablature tablature = optimise(new Optimiser(400, songTracks.get(i), 0.05));
+            Tablature tablature = optimise(new Optimiser(400, track, 0.025));
             songTablature.append(TypeSetter.render(tablature));
         }
-        render(songName, String.valueOf(songTablature));
+        output(songName, String.valueOf(songTablature));
     }
 
     public static Tablature optimise(Optimiser optimiser) {
-        int generations = 100;
+        int generations = 200;
         int quarter = (int) (0.25 * optimiser.getPopulationSize());
         for(int i = 0; i < generations; i++) {
             Collections.sort(optimiser.getPopulation());
@@ -86,7 +87,7 @@ public class Main {
         return optimiser.getPopulation().getFirst();
     }
 
-    public static void render(String songName, String songTablature) {
+    public static void output(String songName, String songTablature) {
         System.out.println("Song: " + songName);
         System.out.println("Timing: " + timeSignature[0] + "/" + timeSignature[1]);
         System.out.println(songTablature);

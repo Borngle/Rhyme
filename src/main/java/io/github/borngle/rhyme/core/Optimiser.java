@@ -99,6 +99,7 @@ public class Optimiser {
             }
             int averageFretDistance = getAverageFretDistance(i, tablatureNotes);
             score -= averageFretDistance;
+            score -= (int) Math.pow(tablatureNote.getFret(), 1.25); // Bias towards lower end of fretboard
         }
         return score;
     }
@@ -143,13 +144,20 @@ public class Optimiser {
      * @return the new combined {@link Tablature}
      **/
     public Tablature crossover(Tablature first, Tablature second) {
-        // TODO: RESEARCH OTHER SELECTION METHODS (E.G., TOURNAMENT OR ROULETTE) AND TEST TWO-POINT CROSSOVER
-        int crossoverPoint = random.nextInt(first.getNotes().size());
-        int bar = first.getNotes().get(crossoverPoint).getNote().getBar();
+        int firstCrossoverPoint = random.nextInt(first.getNotes().size());
+        int secondCrossoverPoint = random.nextInt(first.getNotes().size());
+        int firstBar = first.getNotes().get(firstCrossoverPoint).getNote().getBar();
+        int secondBar = first.getNotes().get(secondCrossoverPoint).getNote().getBar();
+        if (firstBar > secondBar) { // Ensuring first crossover point is before second
+            int temp = firstBar;
+            firstBar = secondBar;
+            secondBar = temp;
+        }
         Tablature crossoverTablature = new Tablature(first.getTuning());
         // Adds all notes from first up to the end of the random bar crossover point, then from second
         for(int i = 0; i < first.getNotes().size(); i++) {
-            if(first.getNotes().get(i).getNote().getBar() < bar) {
+            int currentBar = first.getNotes().get(i).getNote().getBar();
+            if(currentBar < firstBar || currentBar > secondBar) {
                 Note note = first.getNotes().get(i).getNote();
                 int fret = first.getNotes().get(i).getFret();
                 int stringIndex = first.getNotes().get(i).getStringIndex();
@@ -178,7 +186,7 @@ public class Optimiser {
      *
      * @param tablature the {@link Tablature} being mutated
      **/
-    public void mutateNotes(Tablature tablature) {
+    private void mutateNotes(Tablature tablature) {
         ArrayList<Tablature.TablatureNote> tablatureNotes = tablature.getNotes();
         for(int i = 0; i < tablatureNotes.size(); i++) {
             if(Math.random() < this.mutationRate) {
