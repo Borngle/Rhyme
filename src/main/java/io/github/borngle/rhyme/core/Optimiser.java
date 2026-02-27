@@ -11,21 +11,7 @@ package io.github.borngle.rhyme.core;
 
 import java.util.*;
 import static io.github.borngle.rhyme.core.Main.*;
-
-/*
-Gene -> fret choice
-Chromosome -> frets within a chord or bar
-Genome -> all fret placements (full tablatures)
-Population -> set of genomes (multiple tablatures)
-Start with initial population
-For each note, randomly choose a fret that matches pitch
-For each tablature, use fitness function to calculate hand movement cost
-Select best (top 40% ish)
-Create crossover between elites (top 10 from the best) and random selection of tablatures to maintain population size
-Pick parent genomes, and choose crossover point (fret or bar), and combine parts
-Mutation would be randomly picking some notes -> assign their string or fret to a different, pseudorandom, but still valid option
-Repeat a certain amount of times
-*/
+import static io.github.borngle.rhyme.core.Tablature.*;
 
 public class Optimiser {
     private int populationSize;
@@ -43,12 +29,18 @@ public class Optimiser {
         this.populationSize = populationSize;
         this.population = new ArrayList<>();
         for(int i = 0; i < populationSize; i++) {
-            this.population.add(this.generateGenome(notes));
+            this.population.add(this.generateTablature(notes));
         }
         this.mutationRate = mutationRate;
     }
 
-    private Tablature generateGenome(ArrayList<Note> notes) {
+    /**
+     * Randomly generates a valid {@link Tablature} (genome) from its available fret positions.
+     *
+     * @param notes the sequence of musical notes making up a song
+     * @return the generated {@link Tablature}
+     */
+    private Tablature generateTablature(ArrayList<Note> notes) {
         int[] tuning = eStandard; // Default tuning for now (testing)
         Tablature tablature = new Tablature(tuning);
         for(int i = 0; i < notes.size(); i++) {
@@ -84,45 +76,90 @@ public class Optimiser {
      * @return the fitness score of {@code tablature}
      **/
     public static int fitness(Tablature tablature) {
-        // TODO: RECOGNISE CHORD TYPES (OPEN AND BARRE)
         int score = 0;
+        int fretBiasPenalty = 0; // Bias towards lower end of fretboard
+        int stringJumpPenalty = 0; // Penalising large string jumps
+        int fretJumpPenalty = 0; // Penalising large fret jumps
+        int spanPenalty = 0; // Penalising large fret span around notes
+        int neighbourPenalty = 0; // Penalising average distance between notes
+        int openReward = 0; // Rewarding open frets
         ArrayList<Tablature.TablatureNote> tablatureNotes = tablature.getNotes();
         for(int i = 0; i < tablatureNotes.size(); i++) {
             Tablature.TablatureNote tablatureNote = tablatureNotes.get(i);
-            if(tablatureNote.getFret() == 0) { // Rewarding open frets
-                score += 10;
+            if(tablatureNote.getFret() == 0) {
+                openReward += 25;
             }
-            if(i != 0) {
-                // Higher string jumps and fret movements between consecutive notes has a higher penalty
-                score -= (int) Math.pow((Math.abs(tablatureNote.getFret() - tablatureNotes.get(i - 1).getFret())), 2);
-                score -= (Math.abs(tablatureNote.getStringIndex() - tablatureNotes.get(i - 1).getStringIndex()));
+            fretBiasPenalty += (int) Math.pow(tablatureNote.getFret(), 2);
+            spanPenalty += getSpanPenalty(i, tablatureNotes);
+            neighbourPenalty += getAverageFretDistance(i, tablatureNotes);
+            if(i != 0) { // If not the first note
+                fretJumpPenalty += (int) Math.pow((Math.abs(tablatureNote.getFret() - tablatureNotes.get(i - 1).getFret())), 2);
+                stringJumpPenalty += (Math.abs(tablatureNote.getStringIndex() - tablatureNotes.get(i - 1).getStringIndex()));
             }
-            int averageFretDistance = getAverageFretDistance(i, tablatureNotes);
-            score -= averageFretDistance;
-            score -= (int) Math.pow(tablatureNote.getFret(), 1.25); // Bias towards lower end of fretboard
         }
+        score += openReward - fretBiasPenalty - stringJumpPenalty - fretJumpPenalty - (5 * spanPenalty) - (8 * neighbourPenalty);
         return score;
     }
 
-    private static int getAverageFretDistance(int i, ArrayList<Tablature.TablatureNote> tablatureNotes) {
-        int surroundingNeighbours = 7;
+    /**
+     * Calculates the span of frets in the window of notes around {@code note}, and penalises spans
+     * wider than 4 frets.
+     * @param note the current note
+     * @param tablatureNotes the sequence of notes in the song
+     * @return the span penalty
+     */
+    private static int getSpanPenalty(int note, ArrayList<Tablature.TablatureNote> tablatureNotes) {
+        int surroundingNotes = 7;
+        int start = Math.max(0, note - surroundingNotes / 2);
+        int end = Math.min(tablatureNotes.size() - 1, note + surroundingNotes / 2);
+        int minimumFret = Integer.MAX_VALUE;
+        int maximumFret = 0;
+        for (int i = start; i <= end; i++) {
+            int fret = tablatureNotes.get(i).getFret();
+            if (fret == 0) {
+                continue;
+            }
+            minimumFret = Math.min(minimumFret, fret);
+            maximumFret = Math.max(maximumFret, fret);
+        }
+        if (minimumFret == Integer.MAX_VALUE) {
+            return 0;
+        }
+        int span = maximumFret - minimumFret;
+        if(span > 4) {
+            return (span - 4) * 3;
+        }
+        else {
+            return 0;
+        }
+    }
+
+
+    /**
+     * Calculates the average distance between {@code note} and its surrounding notes.
+     * @param note the current note
+     * @param tablatureNotes the sequence of notes in the song
+     * @return the average fret distance
+     */
+    private static int getAverageFretDistance(int note, ArrayList<Tablature.TablatureNote> tablatureNotes) {
+        int surroundingNotes = 7;
         int averageFretDistance; // From number of surrounding neighbours
-        int start = Math.max(0, i - surroundingNeighbours / 2); // Always above start of array
-        int end = Math.min(tablatureNotes.size() - 1, i + surroundingNeighbours / 2); // Always before end of array
+        int start = Math.max(0, note - surroundingNotes / 2); // Always above start of array
+        int end = Math.min(tablatureNotes.size() - 1, note + surroundingNotes / 2); // Always before end of array
         // Expand window if not enough neighbours (still within bounds)
-        while ((end - start) < surroundingNeighbours && end < tablatureNotes.size() - 1) {
+        while ((end - start) < surroundingNotes && end < tablatureNotes.size() - 1) {
             end++;
         }
-        while ((end - start) < surroundingNeighbours && start > 0) {
+        while ((end - start) < surroundingNotes && start > 0) {
             start--;
         }
         double totalDifference = 0;
         int count = 0;
-        for (int k = start; k <= end; k++) {
-            if (k == i) {
+        for (int i = start; i <= end; i++) {
+            if (i == note) {
                 continue; // Skip current element
             }
-            totalDifference += Math.abs(tablatureNotes.get(i).getFret() - tablatureNotes.get(k).getFret());
+            totalDifference += Math.abs(tablatureNotes.get(note).getFret() - tablatureNotes.get(i).getFret());
             count++;
         }
         if(count > 0) {
@@ -173,13 +210,18 @@ public class Optimiser {
         return crossoverTablature;
     }
 
+    /**
+     * Emulates mutation on a given {@link Tablature}.
+     *
+     * @param tablature the {@link Tablature} being mutated
+     */
     public void mutate(Tablature tablature) {
         mutateNotes(tablature);
         // TODO: MUTATE TUNING
     }
 
     /**
-     * Emulates mutation on a given {@link Tablature}.
+     * Mutates notes on a given {@link Tablature}.
      *
      * <p>Iterates through the input {@code tablature}, and if mutation is satisfied, it randomly selects a new, valid string
      * and fret position for the evaluated {@link Tablature.TablatureNote}.</p>

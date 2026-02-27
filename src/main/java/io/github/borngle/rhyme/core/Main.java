@@ -17,31 +17,6 @@ import java.io.File;
 import java.util.*;
 
 public class Main {
-    // Base tunings
-    final static int[] eStandard = new int[]{64, 59, 55, 50, 45, 40};
-    final static int[] dStandard = new int[]{62, 57, 53, 48, 43, 38};
-    final static int[] bStandard = new int[]{59, 54, 50, 45, 40, 35};
-    final static int[] openG = new int[]{67, 62, 55, 50, 43, 38};
-    final static int[] openD = new int[]{62, 57, 54, 50, 45, 38};
-    final static int[] openC = new int[]{64, 60, 55, 48, 43, 36};
-    final static int[] openA = new int[]{69, 64, 57, 52, 45, 40};
-    final static int[] openE = new int[]{64, 59, 56, 52, 47, 40};
-    final static int[] openF = new int[]{65, 60, 53, 48, 45, 41};
-    final static int[] halfStepDown = new int[]{63, 58, 54, 49, 44, 39};
-    final static int[] halfStepUp = new int[]{65, 60, 56, 51, 46, 41};
-    final static int[] dropD = new int[]{64, 59, 55, 50, 45, 38};
-    final static int[] dropCSharp = new int[]{63, 58, 54, 49, 44, 37};
-    final static int[] dropC = new int[]{62, 57, 53, 48, 43, 36};
-    final static int[] dropB = new int[]{61, 56, 52, 47, 42, 35};
-    final static int[] DADGAD = new int[]{62, 57, 55, 50, 45, 38};
-
-    final static int[][] tunings = new int[][]{
-            eStandard, dStandard, bStandard, openG,
-            openD, openC, openA, openE,
-            openF, halfStepDown, halfStepUp, dropD,
-            dropCSharp, dropC, dropB, DADGAD
-    };
-
     // For the song being transcribed
     static int resolution;
     static int[] timeSignature;
@@ -49,7 +24,7 @@ public class Main {
     final static Random random = new Random();
 
     public static void main(String[] args) {
-        String songName = "Cohen Leonard — Suzanne [MIDIfind.com].mid";
+        String songName = "Renbourn John — Winter is Gone [MIDIfind.com].mid";
         File song = new File("midi/" + songName);
         resolution = Reader.getResolution(song);
         timeSignature = Reader.getTimeSignature(song);
@@ -58,16 +33,27 @@ public class Main {
         for(int i = 0; i < songTracks.size(); i++) {
             ArrayList<Note> track = songTracks.get(i);
             if(songTracks.size() > 1) {
-                songTablature.append("\nTrack: ").append(i + 1).append("\n"); // Formatting for multi-track songs
+                songTablature.append("\nTrack: ").append(i + 1); // Formatting for multi-track songs
             }
-            Tablature tablature = optimise(new Optimiser(400, track, 0.025));
+            int generations = 250;
+            Tablature tablature = optimise(new Optimiser(400, track, 0.025), generations);
+            int capo = tablature.getCapoFret();
+            if(tablature.getCapoFret() > 0) {
+                tablature.transpose();
+                songTablature.append("Capo: ").append(capo).append("\n");
+            }
             songTablature.append(TypeSetter.render(tablature));
         }
         output(songName, String.valueOf(songTablature));
     }
 
-    public static Tablature optimise(Optimiser optimiser) {
-        int generations = 200;
+    /**
+     * Runs the genetic algorithm over a given number of {@code generations}.
+     * @param optimiser the genetic algorithm
+     * @param generations the number of generations fitness, crossover, and mutation runs for
+     * @return the best scoring {@link Tablature}
+     */
+    public static Tablature optimise(Optimiser optimiser, int generations) {
         int quarter = (int) (0.25 * optimiser.getPopulationSize());
         for(int i = 0; i < generations; i++) {
             Collections.sort(optimiser.getPopulation());
@@ -76,17 +62,25 @@ public class Main {
                 optimiser.getPopulation().removeLast();
             }
             while(optimiser.getPopulation().size() < optimiser.getPopulationSize()) { // Building population back up
-                int elite = random.nextInt(3); // Random elite genome
-                int other = random.nextInt(quarter - 3) + 3; // Tablature within remaining population but not elite
+                int elitePool = quarter / 5;
+                int elite = random.nextInt(elitePool); // Random elite genome
+                int other = random.nextInt(quarter - elitePool) + elitePool; // Tablature within remaining population but not elite
                 Tablature child = optimiser.crossover(optimiser.getPopulation().get(elite), optimiser.getPopulation().get(other));
                 optimiser.mutate(child);
                 optimiser.getPopulation().add(child);
             }
         }
         Collections.sort(optimiser.getPopulation());
-        return optimiser.getPopulation().getFirst();
+        Tablature best = optimiser.getPopulation().getFirst();
+        best.findCapoFret();
+        return best;
     }
 
+    /**
+     * Prints and writes tablature to a text file.
+     * @param songName the name of the supplied MIDI file
+     * @param songTablature the rendered tablature
+     */
     public static void output(String songName, String songTablature) {
         System.out.println("Song: " + songName);
         System.out.println("Timing: " + timeSignature[0] + "/" + timeSignature[1]);
