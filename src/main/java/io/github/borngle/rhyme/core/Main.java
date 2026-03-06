@@ -24,7 +24,7 @@ public class Main {
     final static Random random = new Random();
 
     public static void main(String[] args) {
-        String songName = "Renbourn John — Winter is Gone [MIDIfind.com].mid";
+        String songName = "Jansch Bert — Tinker's Blues [MIDIfind.com].mid";
         File song = new File("midi/" + songName);
         resolution = Reader.getResolution(song);
         timeSignature = Reader.getTimeSignature(song);
@@ -33,9 +33,9 @@ public class Main {
         for(int i = 0; i < songTracks.size(); i++) {
             ArrayList<Note> track = songTracks.get(i);
             if(songTracks.size() > 1) {
-                songTablature.append("\nTrack: ").append(i + 1); // Formatting for multi-track songs
+                songTablature.append("\nTrack: ").append(i + 1).append("\n"); // Formatting for multi-track songs
             }
-            int generations = 250;
+            int generations = 500;
             Tablature tablature = optimise(new Optimiser(400, track, 0.025), generations);
             int capo = tablature.getCapoFret();
             if(tablature.getCapoFret() > 0) {
@@ -57,7 +57,6 @@ public class Main {
         int quarter = (int) (0.25 * optimiser.getPopulationSize());
         for(int i = 0; i < generations; i++) {
             Collections.sort(optimiser.getPopulation());
-            System.out.println(Optimiser.fitness(optimiser.getPopulation().getFirst()));
             while(optimiser.getPopulation().size() > quarter) { // Remove bottom 75%
                 optimiser.getPopulation().removeLast();
             }

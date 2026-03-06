@@ -26,10 +26,20 @@ public class Optimiser {
      * @param mutationRate the rate at which mutation occurs
      **/
     public Optimiser(int populationSize, ArrayList<Note> notes, double mutationRate) {
+        int[] tuning;
         this.populationSize = populationSize;
         this.population = new ArrayList<>();
+        List<int[]> validTunings = Arrays.stream(allTunings)
+                .filter(candidate -> isValidTuning(candidate, notes))
+                .toList();
         for(int i = 0; i < populationSize; i++) {
-            this.population.add(this.generateTablature(notes));
+            if(random.nextDouble() < 0.7 && validTunings.contains(eStandard)) { // 70% chance to be eStandard if eStandard is valid
+                tuning = eStandard;
+            }
+            else {
+                tuning = validTunings.get(random.nextInt(validTunings.size()));
+            }
+            this.population.add(this.generateTablature(notes, tuning));
         }
         this.mutationRate = mutationRate;
     }
@@ -40,14 +50,12 @@ public class Optimiser {
      * @param notes the sequence of musical notes making up a song
      * @return the generated {@link Tablature}
      */
-    private Tablature generateTablature(ArrayList<Note> notes) {
-        int[] tuning = eStandard; // Default tuning for now (testing)
+    private Tablature generateTablature(ArrayList<Note> notes, int[] tuning) {
         Tablature tablature = new Tablature(tuning);
         for(int i = 0; i < notes.size(); i++) {
             Map<Integer, Integer> fretPositions = notes.get(i).getFretPositions(tuning);
             List<Map.Entry<Integer, Integer>> validEntries = fretPositions.entrySet()
                     .stream()
-                    .filter(entry -> entry.getValue() != null)
                     .toList();
             Map.Entry<Integer, Integer> randomEntry = validEntries.get(random.nextInt(validEntries.size()));
             tablature.addNote(notes.get(i), randomEntry.getKey(), randomEntry.getValue());
@@ -83,21 +91,28 @@ public class Optimiser {
         int spanPenalty = 0; // Penalising large fret span around notes
         int neighbourPenalty = 0; // Penalising average distance between notes
         int openReward = 0; // Rewarding open frets
+        int tuningReward = 0; // Rewarding commonly used tunings
         ArrayList<Tablature.TablatureNote> tablatureNotes = tablature.getNotes();
         for(int i = 0; i < tablatureNotes.size(); i++) {
             Tablature.TablatureNote tablatureNote = tablatureNotes.get(i);
             if(tablatureNote.getFret() == 0) {
-                openReward += 25;
+                openReward += 5;
             }
             fretBiasPenalty += (int) Math.pow(tablatureNote.getFret(), 2);
             spanPenalty += getSpanPenalty(i, tablatureNotes);
             neighbourPenalty += getAverageFretDistance(i, tablatureNotes);
+            if(Arrays.asList(commonTunings).contains(tablature.getTuning())) {
+                tuningReward += 50;
+            }
             if(i != 0) { // If not the first note
-                fretJumpPenalty += (int) Math.pow((Math.abs(tablatureNote.getFret() - tablatureNotes.get(i - 1).getFret())), 2);
-                stringJumpPenalty += (Math.abs(tablatureNote.getStringIndex() - tablatureNotes.get(i - 1).getStringIndex()));
+                // Shouldn't penalise distance between a non-open fret and an open fret
+                if(tablatureNote.getFret() != 0 && tablatureNotes.get(i - 1).getFret() != 0) {
+                    fretJumpPenalty += (int) Math.pow((Math.abs(tablatureNote.getFret() - tablatureNotes.get(i - 1).getFret())), 2);
+                    stringJumpPenalty += (Math.abs(tablatureNote.getStringIndex() - tablatureNotes.get(i - 1).getStringIndex()));
+                }
             }
         }
-        score += openReward - fretBiasPenalty - stringJumpPenalty - fretJumpPenalty - (5 * spanPenalty) - (8 * neighbourPenalty);
+        score += openReward + tuningReward - fretBiasPenalty - stringJumpPenalty - fretJumpPenalty - (5 * spanPenalty) - (8 * neighbourPenalty);
         return score;
     }
 
@@ -231,10 +246,11 @@ public class Optimiser {
     private void mutateNotes(Tablature tablature) {
         ArrayList<Tablature.TablatureNote> tablatureNotes = tablature.getNotes();
         for(int i = 0; i < tablatureNotes.size(); i++) {
-            if(Math.random() < this.mutationRate) {
+            if(random.nextDouble() < this.mutationRate) {
                 Map<Integer, Integer> fretPositions = tablatureNotes.get(i).getNote().getFretPositions(tablature.getTuning());
-                List<Map.Entry<Integer, Integer>> validPositions = fretPositions.entrySet().stream()
-                        .filter(entry -> entry.getValue() != null).toList();
+                List<Map.Entry<Integer, Integer>> validPositions = fretPositions.entrySet()
+                        .stream()
+                        .toList();
                 if(validPositions.isEmpty()) {
                     continue;
                 }

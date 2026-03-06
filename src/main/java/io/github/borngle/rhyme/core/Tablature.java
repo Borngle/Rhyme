@@ -35,11 +35,15 @@ public class Tablature implements Comparable<Tablature> {
     final static int[] dropB = new int[]{61, 56, 52, 47, 42, 35};
     final static int[] DADGAD = new int[]{62, 57, 55, 50, 45, 38};
 
-    final static int[][] tunings = new int[][]{
+    final static int[][] allTunings = new int[][]{
             eStandard, dStandard, bStandard, openG,
             openD, openC, openA, openE,
             openF, halfStepDown, halfStepUp, dropD,
             dropCSharp, dropC, dropB, DADGAD
+    };
+
+    final static int[][] commonTunings = new int[][]{
+            eStandard, dropD, halfStepDown, openG, openD
     };
 
     class TablatureNote {
@@ -178,46 +182,58 @@ public class Tablature implements Comparable<Tablature> {
      */
     private boolean isValidCapo(int candidateCapo) {
         for(int i = 0; i < this.notes.size(); i++) {
-            TablatureNote note = this.notes.get(i);
-            if(note.getFret() == 0) {
-                Map<Integer, Integer> fretPositions = note.getNote().getFretPositions(this.tuning);
-                boolean hasAlternative = fretPositions.entrySet().stream().anyMatch(entry -> entry.getValue() != null
-                                && entry.getValue() == candidateCapo
-                                && entry.getKey() != note.getStringIndex());
-                if(!hasAlternative) {
-                    return false;
-                }
+            TablatureNote tablatureNote = this.notes.get(i);
+            Map<Integer, Integer> fretPositions = tablatureNote.getNote().getFretPositions(this.tuning);
+            boolean hasAlternative = fretPositions.values().stream()
+                    .anyMatch(fret -> fret >= candidateCapo);
+            if(!hasAlternative) {
+                return false;
             }
         }
         return true;
     }
 
     /**
-     * Shifts every non-open fret down by the capo fret, and checks if there is another available open fretted note
-     * relative to the capo if the note is an open note.
+     * Shifts every note to its lowest position at or above capo fret, and then subtracts note fret by capo to give
+     * relative position for that capo fret.
      */
     public void transpose() {
         if (this.capoFret == 0) {
             return;
         }
         for(int i = 0; i < this.notes.size(); i++) {
-            TablatureNote note = this.notes.get(i);
-            if(note.fret == 0) {
-                Map<Integer, Integer> fretPositions = note.note.getFretPositions(this.tuning);
-                for (Map.Entry<Integer, Integer> entry : fretPositions.entrySet()) {
-                    if (entry.getValue() != null // Finds if note can be played at the capo fret on another string
-                            && entry.getValue() == this.capoFret
-                            && entry.getKey() != note.stringIndex) {
-                        note.setStringIndex(entry.getKey());
-                        note.setFret(0); // After capo, fret becomes 0
-                        break; // First valid alternative
-                    }
+            TablatureNote tablatureNote = this.notes.get(i);
+            Map<Integer, Integer> fretPositions = tablatureNote.note.getFretPositions(this.tuning);
+            // Finds the lowest valid fret at or above the capo fret on any string
+            int bestFret = Integer.MAX_VALUE;
+            int bestString = tablatureNote.stringIndex;
+            for(Map.Entry<Integer, Integer> entry : fretPositions.entrySet()) {
+                int fret = entry.getValue();
+                if(fret >= this.capoFret && fret < bestFret) {
+                    bestFret = fret;
+                    bestString = entry.getKey();
                 }
             }
-            else {
-                note.setFret(note.fret - this.capoFret);
+            tablatureNote.setStringIndex(bestString);
+            tablatureNote.setFret(bestFret - this.capoFret);
+        }
+    }
+
+    /**
+     * Checks if a tablature can be played in a given tuning.
+     *
+     * @param targetTuning the target tuning
+     * @param notes the sequence of notes in the song
+     * @return true if all notes have valid positions in the given tuning, false if even one note has none
+     */
+    public static boolean isValidTuning(int[] targetTuning, ArrayList<Note> notes) {
+        for(int i = 0; i < notes.size(); i++) {
+            Map<Integer, Integer> fretPositions = notes.get(i).getFretPositions(targetTuning);
+            if(fretPositions.isEmpty()) {
+               return false;
             }
         }
+        return true;
     }
 
     @Override
