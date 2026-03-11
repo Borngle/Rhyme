@@ -24,8 +24,11 @@ public class Main {
     final static Random random = new Random();
 
     public static void main(String[] args) {
-        String songName = "Jansch Bert — Tinker's Blues [MIDIfind.com].mid";
-        File song = new File("midi/" + songName);
+        if (args.length == 0) {
+            return;
+        }
+        File song = new File(args[0]);
+        String songName = song.getName();
         resolution = Reader.getResolution(song);
         timeSignature = Reader.getTimeSignature(song);
         ArrayList<ArrayList<Note>> songTracks = Reader.readSong(song);

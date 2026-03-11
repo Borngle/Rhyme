@@ -43,7 +43,7 @@ public class Tablature implements Comparable<Tablature> {
     };
 
     final static int[][] commonTunings = new int[][]{
-            eStandard, dropD, halfStepDown, openG, openD
+            eStandard, dropD, halfStepDown, openG
     };
 
     class TablatureNote {
