@@ -13,12 +13,12 @@ package io.github.borngle.rhyme.core;
 
 /*
 Example format:
-E|-----------0---|
-B|--2---2-----2--|
-G|--4---4-----4--|
-D|--2---2-2---2-2|
-A|--0---0-----0--|
-E|0----0---0-0---|
+E |-----------0---|
+B |--2---2-----2--|
+G |--4---4-----4--|
+D |--2---2-2---2-2|
+A |--0---0-----0--|
+E |0----0---0-0---|
  */
 
 import java.io.FileWriter;
@@ -38,7 +38,7 @@ public class TypeSetter {
      * @return a formatted {@code String} tablature
      **/
     public static String render(Tablature tablature) {
-        int totalBars = tablature.getNotes().getLast().getNote().getBar();
+        int totalBars = tablature.getNotes().getLast().getBar();
         // 4 / denominator converts denominator note value to quarter note value
         int ticksPerBar = (int) (resolution * ((4.0 / timeSignature[1]) * timeSignature[0]));
         int ticksPerSubdivision = resolution / 8; // 1/32nd notes (8 per quarter)

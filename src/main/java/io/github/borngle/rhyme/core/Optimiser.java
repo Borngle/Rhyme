@@ -92,7 +92,7 @@ public class Optimiser {
         int neighbourPenalty = 0; // Penalising average distance between notes
         int openReward = 0; // Rewarding open frets
         int tuningReward = 0; // Rewarding commonly used tunings
-        ArrayList<Tablature.TablatureNote> tablatureNotes = tablature.getNotes();
+        ArrayList<Tablature.TablatureNote> tablatureNotes = tablature.getTablatureNotes();
         for(int i = 0; i < tablatureNotes.size(); i++) {
             Tablature.TablatureNote tablatureNote = tablatureNotes.get(i);
             if(tablatureNote.getFret() == 0) {
@@ -102,7 +102,7 @@ public class Optimiser {
             spanPenalty += getSpanPenalty(i, tablatureNotes);
             neighbourPenalty += getAverageFretDistance(i, tablatureNotes);
             if(Arrays.asList(commonTunings).contains(tablature.getTuning())) {
-                tuningReward += 50;
+                tuningReward += 40;
             }
             if(i != 0) { // If not the first note
                 // Shouldn't penalise distance between a non-open fret and an open fret
@@ -196,32 +196,39 @@ public class Optimiser {
      * @return the new combined {@link Tablature}
      **/
     public Tablature crossover(Tablature first, Tablature second) {
-        int firstCrossoverPoint = random.nextInt(first.getNotes().size());
-        int secondCrossoverPoint = random.nextInt(first.getNotes().size());
-        int firstBar = first.getNotes().get(firstCrossoverPoint).getNote().getBar();
-        int secondBar = first.getNotes().get(secondCrossoverPoint).getNote().getBar();
+        int firstCrossoverPoint = random.nextInt(first.getTablatureNotes().size());
+        int secondCrossoverPoint = random.nextInt(first.getTablatureNotes().size());
+        int firstBar = first.getTablatureNotes().get(firstCrossoverPoint).getNote().getBar();
+        int secondBar = first.getTablatureNotes().get(secondCrossoverPoint).getNote().getBar();
         if (firstBar > secondBar) { // Ensuring first crossover point is before second
             int temp = firstBar;
             firstBar = secondBar;
             secondBar = temp;
         }
-        Tablature crossoverTablature = new Tablature(first.getTuning());
+        Tablature crossoverTablature;
+        if(random.nextDouble() < 0.5) {
+            crossoverTablature = new Tablature(first.getTuning());
+        }
+        else {
+            crossoverTablature = new Tablature(second.getTuning());
+        }
         // Adds all notes from first up to the end of the random bar crossover point, then from second
-        for(int i = 0; i < first.getNotes().size(); i++) {
-            int currentBar = first.getNotes().get(i).getNote().getBar();
+        for(int i = 0; i < first.getTablatureNotes().size(); i++) {
+            int currentBar = first.getTablatureNotes().get(i).getNote().getBar();
             if(currentBar < firstBar || currentBar > secondBar) {
-                Note note = first.getNotes().get(i).getNote();
-                int fret = first.getNotes().get(i).getFret();
-                int stringIndex = first.getNotes().get(i).getStringIndex();
+                Note note = first.getTablatureNotes().get(i).getNote();
+                int fret = first.getTablatureNotes().get(i).getFret();
+                int stringIndex = first.getTablatureNotes().get(i).getStringIndex();
                 crossoverTablature.addNote(note, stringIndex, fret);
             }
             else {
-                Note note = second.getNotes().get(i).getNote();
-                int fret = second.getNotes().get(i).getFret();
-                int stringIndex = second.getNotes().get(i).getStringIndex();
+                Note note = second.getTablatureNotes().get(i).getNote();
+                int fret = second.getTablatureNotes().get(i).getFret();
+                int stringIndex = second.getTablatureNotes().get(i).getStringIndex();
                 crossoverTablature.addNote(note, stringIndex, fret);
             }
         }
+        crossoverTablature.map();
         return crossoverTablature;
     }
 
@@ -232,7 +239,7 @@ public class Optimiser {
      */
     public void mutate(Tablature tablature) {
         mutateNotes(tablature);
-        // TODO: MUTATE TUNING
+        mutateTuning(tablature);
     }
 
     /**
@@ -244,7 +251,7 @@ public class Optimiser {
      * @param tablature the {@link Tablature} being mutated
      **/
     private void mutateNotes(Tablature tablature) {
-        ArrayList<Tablature.TablatureNote> tablatureNotes = tablature.getNotes();
+        ArrayList<Tablature.TablatureNote> tablatureNotes = tablature.getTablatureNotes();
         for(int i = 0; i < tablatureNotes.size(); i++) {
             if(random.nextDouble() < this.mutationRate) {
                 Map<Integer, Integer> fretPositions = tablatureNotes.get(i).getNote().getFretPositions(tablature.getTuning());
@@ -268,6 +275,51 @@ public class Optimiser {
                         break;
                     }
                 }
+            }
+        }
+    }
+
+    /**
+     * Mutates the tuning of the strings by shifting uniformly, individually, or completely randomly. Tunings are
+     * constrained to sensible bounds to prevent slack and string breakage.
+     *
+     * @param tablature the {@link Tablature} being mutated
+     */
+    private void mutateTuning(Tablature tablature) {
+        int[] tuning = tablature.getTuning();
+        // These bounds are for standard 6-string guitars
+        final int upperBound = 69; // Ceiling across all strings which corresponds to A4
+        final int lowerBound = 36; // Floor across all strings which corresponds to C2
+        final int maximumSemitonesUp = 7; // Perfect fifth
+        final int maximumSemitonesDown = 4; // Major third
+        if(random.nextDouble() < mutationRate / 2) {
+            int[] newTuning = Arrays.copyOf(tuning, tuning.length);
+            double mutate = random.nextDouble();
+            if(mutate < 0.5) {
+                // Shifting all strings uniformly by the same random delta
+                int delta = random.nextInt(maximumSemitonesUp + maximumSemitonesDown + 1) - maximumSemitonesDown;
+                for(int i = 0; i < newTuning.length; i++) {
+                    newTuning[i] = Math.clamp(tuning[i] + delta, lowerBound, upperBound);
+                }
+            }
+            else if(mutate < 0.8) {
+                // Shifting one random string
+                int string = random.nextInt(tuning.length);
+                int lower = Math.max(tuning[string] - maximumSemitonesDown, lowerBound);
+                int upper = Math.min(tuning[string] + maximumSemitonesUp, upperBound);
+                newTuning[string] = random.nextInt(upper - lower + 1) + lower;
+            }
+            else {
+                // Shifting each string randomly
+                for(int i = 0; i < newTuning.length; i++) {
+                    int lower = Math.max(tuning[i] - maximumSemitonesDown, lowerBound);
+                    int upper = Math.min(tuning[i] + maximumSemitonesUp, upperBound);
+                    newTuning[i] = random.nextInt(upper - lower + 1) + lower;
+                }
+            }
+            if(isValidTuning(newTuning, tablature.getNotes())) {
+                tablature.setTuning(newTuning);
+                tablature.map();
             }
         }
     }

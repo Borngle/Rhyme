@@ -15,6 +15,7 @@ package io.github.borngle.rhyme.core;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class Tablature implements Comparable<Tablature> {
     // Base tunings
@@ -43,7 +44,7 @@ public class Tablature implements Comparable<Tablature> {
     };
 
     final static int[][] commonTunings = new int[][]{
-            eStandard, dropD, halfStepDown, openG
+            eStandard, dropD, halfStepDown, openG, openD
     };
 
     class TablatureNote {
@@ -83,25 +84,31 @@ public class Tablature implements Comparable<Tablature> {
         }
     }
 
-    private ArrayList<TablatureNote> notes;
+    private ArrayList<TablatureNote> tablatureNotes;
     private int[] tuning;
     private int capoFret;
 
     public Tablature(int[] tuning) {
-        this.notes = new ArrayList<>();
+        this.tablatureNotes = new ArrayList<>();
         this.tuning = tuning;
         this.capoFret = 0;
     }
 
     public Tablature(Tablature tablature) {
         this.tuning = tablature.tuning;
-        this.notes = new ArrayList<>();
-        this.notes.addAll(tablature.notes);
+        this.tablatureNotes = new ArrayList<>();
+        this.tablatureNotes.addAll(tablature.tablatureNotes);
         this.capoFret = tablature.capoFret;
     }
 
-    public ArrayList<TablatureNote> getNotes() {
-        return notes;
+    public ArrayList<TablatureNote> getTablatureNotes() {
+        return tablatureNotes;
+    }
+
+    public ArrayList<Note> getNotes() {
+        return tablatureNotes.stream()
+                .map(TablatureNote::getNote)
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     public int[] getTuning() {
@@ -122,7 +129,7 @@ public class Tablature implements Comparable<Tablature> {
 
     public void addNote(Note note, int string, int fret) {
         TablatureNote tablatureNote = new TablatureNote(note, string, fret);
-        this.getNotes().add(tablatureNote);
+        this.tablatureNotes.add(tablatureNote);
     }
 
     /**
@@ -136,9 +143,9 @@ public class Tablature implements Comparable<Tablature> {
      **/
     public ArrayList<TablatureNote> getBar(int barNumber) {
         ArrayList<TablatureNote> bar = new ArrayList<>();
-        for(int i = 0; i < this.notes.size(); i++) {
-            if(this.notes.get(i).getNote().getBar() == barNumber) {
-                bar.add(this.notes.get(i));
+        for(int i = 0; i < this.tablatureNotes.size(); i++) {
+            if(this.tablatureNotes.get(i).getNote().getBar() == barNumber) {
+                bar.add(this.tablatureNotes.get(i));
             }
         }
         return bar;
@@ -152,7 +159,7 @@ public class Tablature implements Comparable<Tablature> {
         int maximumCapo = 7;
         int bestCapo = 0;
         int bestScore = Optimiser.fitness(this); // No capo
-        int maximumFret = this.notes // Highest fret
+        int maximumFret = this.tablatureNotes // Highest fret
                 .stream()
                 .mapToInt(TablatureNote::getFret)
                 .max().orElse(0);
@@ -181,8 +188,8 @@ public class Tablature implements Comparable<Tablature> {
      * @return true if the song has a valid capo transposition at {@code candidateCapo}, false otherwise
      */
     private boolean isValidCapo(int candidateCapo) {
-        for(int i = 0; i < this.notes.size(); i++) {
-            TablatureNote tablatureNote = this.notes.get(i);
+        for(int i = 0; i < this.tablatureNotes.size(); i++) {
+            TablatureNote tablatureNote = this.tablatureNotes.get(i);
             Map<Integer, Integer> fretPositions = tablatureNote.getNote().getFretPositions(this.tuning);
             boolean hasAlternative = fretPositions.values().stream()
                     .anyMatch(fret -> fret >= candidateCapo);
@@ -201,8 +208,8 @@ public class Tablature implements Comparable<Tablature> {
         if (this.capoFret == 0) {
             return;
         }
-        for(int i = 0; i < this.notes.size(); i++) {
-            TablatureNote tablatureNote = this.notes.get(i);
+        for(int i = 0; i < this.tablatureNotes.size(); i++) {
+            TablatureNote tablatureNote = this.tablatureNotes.get(i);
             Map<Integer, Integer> fretPositions = tablatureNote.note.getFretPositions(this.tuning);
             // Finds the lowest valid fret at or above the capo fret on any string
             int bestFret = Integer.MAX_VALUE;
@@ -234,6 +241,32 @@ public class Tablature implements Comparable<Tablature> {
             }
         }
         return true;
+    }
+
+    public void map() {
+        for(int i = 0; i < this.tablatureNotes.size(); i++) {
+            TablatureNote tablatureNote = this.tablatureNotes.get(i);
+            Map<Integer, Integer> fretPositions = tablatureNote.note.getFretPositions(this.tuning);
+            int closestScore = Integer.MAX_VALUE;
+            int bestFret = tablatureNote.fret;
+            int bestString = tablatureNote.stringIndex;
+            // For each note, should find the closest equivalent alternative fret to current position
+            for(Map.Entry<Integer, Integer> entry : fretPositions.entrySet()) {
+                int fret = entry.getValue();
+                int string = entry.getKey();
+                int fretDistance = Math.abs(tablatureNote.fret - fret);
+                int stringDistance = Math.abs(tablatureNote.stringIndex - string);
+                int distanceScore = fretDistance + 2 * stringDistance;
+                if(distanceScore < closestScore) {
+                    closestScore = distanceScore;
+                    bestFret = fret;
+                    bestString = string;
+
+                }
+            }
+            tablatureNote.setStringIndex(bestString);
+            tablatureNote.setFret(bestFret);
+        }
     }
 
     @Override
