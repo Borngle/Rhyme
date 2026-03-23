@@ -30,33 +30,33 @@ public class Reader {
      **/
     public static ArrayList<ArrayList<Note>> readSong(File song) {
         Sequence sequence;
-        ArrayList<ArrayList<Note>> songTracks = new ArrayList<>();
+        ArrayList<ArrayList<Note>> songTracks = new ArrayList<>(); // All tracks in song
         try {
             sequence = MidiSystem.getSequence(song); // Load MIDI
         }
         catch (InvalidMidiDataException | IOException e) {
             throw new RuntimeException(e);
         }
-        Track[] sequenceTracks = sequence.getTracks(); // Get all tracks from sequence
+        Track[] sequenceTracks = sequence.getTracks(); // Get all MIDI tracks from sequence
         for (int i = 0; i < sequenceTracks.length; i++) {
-            ArrayList<Note> notes = new ArrayList<>();
-            Map<Integer, Note> activeNotes = new HashMap<>(); // Tracks currently playing notes
+            ArrayList<Note> notes = new ArrayList<>(); // Completed notes for track
+            Map<Integer, Note> activeNotes = new HashMap<>(); // Notes that have started but not ended (pitch is key)
             for (int j = 0; j < sequenceTracks[i].size(); j++) {
                 MidiEvent event = sequenceTracks[i].get(j); // Get MidiEvent from track
                 MidiMessage message = event.getMessage(); // Get MidiMessage
-                long tick = event.getTick();
+                long tick = event.getTick(); // Timestamp
                 if (message instanceof ShortMessage) { // Refers to the channel and note
                     ShortMessage shortMessage = (ShortMessage) message;
-                    int command = shortMessage.getCommand();
+                    int command = shortMessage.getCommand(); // Type of event
                     int pitch = shortMessage.getData1();
-                    int velocity = shortMessage.getData2();
+                    int velocity = shortMessage.getData2(); // How hard note was struck (volume)
                     // velocity > 0 means start note
                     if(command == ShortMessage.NOTE_ON && velocity > 0) {
                         Note note = new Note(pitch, tick, velocity);
-                        activeNotes.put(pitch, note);
+                        activeNotes.put(pitch, note); // Keep until it turns off
                         notes.add(note);
                     }
-                    // velocity == 0 means note off
+                    // NOTE_ON with velocity == 0 means note off
                     else if (command == ShortMessage.NOTE_OFF || command == ShortMessage.NOTE_ON && velocity == 0) {
                         Note note = activeNotes.remove(pitch);
                         if (note != null) {
