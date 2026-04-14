@@ -90,20 +90,25 @@ public class Optimiser {
         int fretJumpPenalty = 0; // Penalising large fret jumps
         int spanPenalty = 0; // Penalising large fret span around notes
         int neighbourPenalty = 0; // Penalising average distance between notes
+        int chordSpanPenalty = 0; // Penalising impossible chord shapes
         int openReward = 0; // Rewarding open frets
         int tuningReward = 0; // Rewarding commonly used tunings
         ArrayList<Tablature.TablatureNote> tablatureNotes = tablature.getTablatureNotes();
+        ArrayList<ArrayList<Tablature.TablatureNote>> chords = getChords(tablatureNotes);
+        for(int i = 0; i < chords.size(); i++) {
+            chordSpanPenalty += getChordSpanPenalty(chords.get(i));
+        }
+        if(Arrays.asList(commonTunings).contains(tablature.getTuning())) {
+            tuningReward = 20 * tablatureNotes.size();
+        }
         for(int i = 0; i < tablatureNotes.size(); i++) {
             Tablature.TablatureNote tablatureNote = tablatureNotes.get(i);
             if(tablatureNote.getFret() == 0) {
                 openReward += 5;
             }
-            fretBiasPenalty += (int) Math.pow(tablatureNote.getFret(), 2);
+            fretBiasPenalty += (int) Math.pow(tablatureNote.getFret(), 1.25);
             spanPenalty += getSpanPenalty(i, tablatureNotes);
             neighbourPenalty += getAverageFretDistance(i, tablatureNotes);
-            if(Arrays.asList(commonTunings).contains(tablature.getTuning())) {
-                tuningReward += 40;
-            }
             if(i != 0) { // If not the first note
                 // Shouldn't penalise distance between a non-open fret and an open fret
                 if(tablatureNote.getFret() != 0 && tablatureNotes.get(i - 1).getFret() != 0) {
@@ -112,13 +117,15 @@ public class Optimiser {
                 }
             }
         }
-        score += openReward + tuningReward - fretBiasPenalty - stringJumpPenalty - fretJumpPenalty - (5 * spanPenalty) - (8 * neighbourPenalty);
+        score += openReward + tuningReward - fretBiasPenalty - (5 * stringJumpPenalty) -
+                fretJumpPenalty - (5 * spanPenalty) - (8 * neighbourPenalty) - 20 * (chordSpanPenalty);
         return score;
     }
 
     /**
      * Calculates the span of frets in the window of notes around {@code note}, and penalises spans
-     * wider than 4 frets.
+     * wider than 4 frets. Concerns the local hand position spread over time.
+     *
      * @param note the current note
      * @param tablatureNotes the sequence of notes in the song
      * @return the span penalty
@@ -152,6 +159,7 @@ public class Optimiser {
 
     /**
      * Calculates the average distance between {@code note} and its surrounding notes.
+     *
      * @param note the current note
      * @param tablatureNotes the sequence of notes in the song
      * @return the average fret distance
@@ -184,6 +192,70 @@ public class Optimiser {
             averageFretDistance = 0;
         }
         return averageFretDistance;
+    }
+
+    /**
+     * Retrieves chords in a song by grouping simultaneously played notes.
+     *
+     * @param tablatureNotes the sequence of notes in the song
+     * @return collections of chords
+     */
+    private static ArrayList<ArrayList<Tablature.TablatureNote>> getChords(ArrayList<Tablature.TablatureNote> tablatureNotes) {
+        ArrayList<ArrayList<Tablature.TablatureNote>> chords = new ArrayList<>();
+        ArrayList<Tablature.TablatureNote> chord = new ArrayList<>();
+        long chordEnd = 0; // Time
+        for(int i = 0; i < tablatureNotes.size(); i++) {
+            Tablature.TablatureNote current = tablatureNotes.get(i);
+            Note currentNote = current.getNote();
+            if(chord.isEmpty() || currentNote.getStart() < chordEnd) {
+                chord.add(current);
+                chordEnd = Math.max(chordEnd, currentNote.getStart() + currentNote.getDuration());
+            }
+            else {
+                if(chord.size() > 1) {
+                    chords.add(new ArrayList<>(chord));
+                }
+                chord.clear();
+                chord.add(current);
+                chordEnd = currentNote.getStart() + currentNote.getDuration();
+            }
+        }
+        if(chord.size() > 1) { // Final chord check
+            chords.add(new ArrayList<>(chord));
+        }
+        return chords;
+    }
+
+    /**
+     * Calculates the distance a hand is stretched across the notes in a chord, and penalises distances above 4 frets.
+     *
+     * @param chord a group of simultaneously played notes
+     * @return the chord span penalty
+     */
+    private static int getChordSpanPenalty(ArrayList<Tablature.TablatureNote> chord) {
+        int maximumFret = Integer.MIN_VALUE;
+        int minimumFret = Integer.MAX_VALUE;
+        for(int i = 0; i < chord.size(); i++) {
+            if(chord.get(i).getFret() == 0) {
+                continue;
+            }
+            if(chord.get(i).getFret() > maximumFret) {
+                maximumFret = chord.get(i).getFret();
+            }
+            if(chord.get(i).getFret() < minimumFret) {
+                minimumFret = chord.get(i).getFret();
+            }
+        }
+        if(minimumFret == Integer.MAX_VALUE) { // Never set (all notes open)
+            return 0;
+        }
+        int penalty = 0;
+        int comfortableSpan = 4 + (minimumFret / 5); // 4 frets is a good baseline for span
+        int actualSpan = maximumFret - minimumFret;
+        if(actualSpan > comfortableSpan) {
+            penalty = (int) Math.pow(actualSpan - comfortableSpan, 2);
+        }
+        return penalty;
     }
 
     /**
