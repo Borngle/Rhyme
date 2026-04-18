@@ -98,7 +98,7 @@ public class Optimiser {
         for(int i = 0; i < chords.size(); i++) {
             chordSpanPenalty += getChordSpanPenalty(chords.get(i));
         }
-        if(Arrays.asList(commonTunings).contains(tablature.getTuning())) {
+        if(Arrays.stream(commonTunings).anyMatch(tuning -> Arrays.equals(tuning, tablature.getTuning()))) {
             tuningReward = 20 * tablatureNotes.size();
         }
         for(int i = 0; i < tablatureNotes.size(); i++) {
@@ -311,7 +311,7 @@ public class Optimiser {
      */
     public void mutate(Tablature tablature) {
         mutateNotes(tablature);
-        mutateTuning(tablature);
+        //mutateTuning(tablature);
     }
 
     /**
