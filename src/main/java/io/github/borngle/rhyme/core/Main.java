@@ -39,7 +39,9 @@ public class Main {
                 songTablature.append("\nTrack: ").append(i + 1).append("\n"); // Formatting for multi-track songs
             }
             int generations = 500;
-            Tablature tablature = optimise(new Optimiser(400, track, 0.025), generations);
+            int populationSize = 500;
+            int quarter = (int) (0.25 * populationSize);
+            Tablature tablature = optimise(new Optimiser(populationSize, track, 0.05), generations, quarter, 0.2);
             int capo = tablature.getCapoFret();
             if(tablature.getCapoFret() > 0) {
                 tablature.transpose();
@@ -54,19 +56,20 @@ public class Main {
      * Runs the genetic algorithm over a given number of {@code generations}.
      * @param optimiser the genetic algorithm
      * @param generations the number of generations fitness, crossover, and mutation runs for
+     * @param selectionPressure the amount of genomes kept after a generation
+     * @param elitePool the percentage of the highest scoring genomes from the selected population to be chosen for crossover
      * @return the best scoring {@link Tablature}
      */
-    public static Tablature optimise(Optimiser optimiser, int generations) {
-        int quarter = (int) (0.25 * optimiser.getPopulationSize());
+    public static Tablature optimise(Optimiser optimiser, int generations, int selectionPressure, double elitePool) {
+        int elitePoolSize = (int) (selectionPressure * elitePool);
         for(int i = 0; i < generations; i++) {
             Collections.sort(optimiser.getPopulation());
-            while(optimiser.getPopulation().size() > quarter) { // Remove bottom 75%
+            while(optimiser.getPopulation().size() > selectionPressure) { // Remove bottom x%
                 optimiser.getPopulation().removeLast();
             }
             while(optimiser.getPopulation().size() < optimiser.getPopulationSize()) { // Building population back up
-                int elitePool = quarter / 5;
-                int elite = random.nextInt(elitePool); // Random elite genome
-                int other = random.nextInt(quarter - elitePool) + elitePool; // Tablature within remaining population but not elite
+                int elite = random.nextInt(elitePoolSize); // Random elite genome
+                int other = random.nextInt(selectionPressure - elitePoolSize) + elitePoolSize; // Tablature within remaining population but not elite
                 Tablature child = optimiser.crossover(optimiser.getPopulation().get(elite), optimiser.getPopulation().get(other));
                 optimiser.mutate(child);
                 optimiser.getPopulation().add(child);
