@@ -12,15 +12,21 @@ public class StatisticalTest {
     static final double mutationRate = 0.05;
     static final int populationSize = 200;
     static final int generations = 80;
-    static final int selectionPressure = (int) (populationSize * 0.25);
+    static final double selectionPressure = 0.25;
     static final double elitePool = 0.2;
     static final int seed = 42;
     // Mutation rate testing
     static final double mutationRateA = 0.05;
     static final double mutationRateB = 0.1;
     // Population size testing
-    static final int populationSizeA = 300;
-    static final int populationSizeB = 700;
+    static final int populationSizeA = 700;
+    static final int populationSizeB = 1500;
+    // Selection pressure testing
+    static final double selectionPressureA = 0.05;
+    static final double selectionPressureB = 0.1;
+    // Elite pool testing
+    static final double elitePoolA = 0.05;
+    static final double elitePoolB = 0.2;
 
     public static void main(String[] args) {
         if (args.length == 0) {
@@ -36,6 +42,18 @@ public class StatisticalTest {
         // Population test
         scoresA = testConfiguration(songs, mutationRate, populationSizeA, generations, selectionPressure, elitePool);
         scoresB = testConfiguration(songs, mutationRate, populationSizeB, generations, selectionPressure, elitePool);
+        analyse(scoresA, scoresB);
+        // Selection pressure test
+        scoresA = testConfiguration(songs, mutationRate, populationSize, generations, selectionPressureA, elitePool);
+        scoresB = testConfiguration(songs, mutationRate, populationSize, generations, selectionPressureB, elitePool);
+        analyse(scoresA, scoresB);
+        // Elite pool test
+        scoresA = testConfiguration(songs, mutationRate, populationSize, generations, selectionPressure, elitePoolA);
+        scoresB = testConfiguration(songs, mutationRate, populationSize, generations, selectionPressure, elitePoolB);
+        analyse(scoresA, scoresB);
+        // General test
+        scoresA = testConfiguration(songs, 0.025, 500, 500, 0.25, 0.2);
+        scoresB = testConfiguration(songs, 0.05, 700, 500, 0.1, 0.05);
         analyse(scoresA, scoresB);
     }
 
@@ -70,12 +88,12 @@ public class StatisticalTest {
      * @param mutationRate the rate at which mutation occurs
      * @param populationSize how many tablatures there are
      * @param generations the number of generations fitness, crossover, and mutation runs for
-     * @param selectionPressure the amount of genomes kept after a generation
+     * @param selectionPressure the percentage of genomes kept after a generation
      * @param elitePool the percentage of the highest scoring genomes from the selected population to be chosen for crossover
      * @return the final scores from every song tested given the configuration
      */
     public static double[] testConfiguration(ArrayList<ArrayList<Note>> songs, double mutationRate, int populationSize,
-                                             int generations, int selectionPressure, double elitePool) {
+                                             int generations, double selectionPressure, double elitePool) {
         double[] scores = new double[songs.size()];
         for (int i = 0; i < songs.size(); i++) {
             Main.random.setSeed(seed + i);
@@ -111,7 +129,7 @@ public class StatisticalTest {
         System.out.println("p-value: " + p);
         System.out.println("Significant: " + (p < 0.05 ? "YES" : "NO"));
         if (statisticalPower < 0.80) {
-            System.out.printf("Need " + Math.max(0, requiredN - scoresA.length) + " more songs for reliable results");
+            System.out.printf("Need " + Math.max(0, requiredN - scoresA.length) + " more songs for reliable results\n");
         }
         if (p < 0.05) {
             System.out.println("Significant difference found; configuration " + (mean > 0 ? "B" : "A") + " performs better");
