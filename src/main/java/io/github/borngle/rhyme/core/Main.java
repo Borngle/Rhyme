@@ -39,7 +39,7 @@ public class Main {
                 songTablature.append("\nTrack: ").append(i + 1).append("\n"); // Formatting for multi-track songs
             }
             int generations = 500;
-            int populationSize = 1500;
+            int populationSize = 1000;
             Tablature tablature = optimise(new Optimiser(populationSize, track, 0.05), generations, 0.1, 0.2);
             int capo = tablature.getCapoFret();
             if(tablature.getCapoFret() > 0) {

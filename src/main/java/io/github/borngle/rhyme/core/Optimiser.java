@@ -99,7 +99,7 @@ public class Optimiser {
             chordSpanPenalty += getChordSpanPenalty(chords.get(i));
         }
         if(Arrays.stream(commonTunings).anyMatch(tuning -> Arrays.equals(tuning, tablature.getTuning()))) {
-            tuningReward = 20 * tablatureNotes.size();
+            tuningReward = 35 * tablatureNotes.size();
         }
         for(int i = 0; i < tablatureNotes.size(); i++) {
             Tablature.TablatureNote tablatureNote = tablatureNotes.get(i);
