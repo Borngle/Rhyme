@@ -13,8 +13,7 @@
 
 package io.github.borngle.rhyme.core;
 
-import java.util.ArrayList;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Tablature implements Comparable<Tablature> {
@@ -43,19 +42,27 @@ public class Tablature implements Comparable<Tablature> {
             dropCSharp, dropC, dropB, DADGAD
     };
 
-    final static int[][] commonTunings = new int[][]{
-            eStandard, dropD, halfStepDown, openG, openD
-    };
+    final static Set<List<Integer>> commonTunings = Set.of(
+            Arrays.stream(eStandard).boxed().toList(),
+            Arrays.stream(dropD).boxed().toList(),
+            Arrays.stream(halfStepDown).boxed().toList(),
+            Arrays.stream(openG).boxed().toList(),
+            Arrays.stream(openD).boxed().toList()
+    );
+
+    private Integer fitness = null; // Cached
 
     class TablatureNote {
         private final Note note;
         private int stringIndex;
         private int fret;
+        private final Tablature tablature; // Parent reference
 
-        public TablatureNote(Note note, int stringIndex, int fret) {
+        public TablatureNote(Note note, int stringIndex, int fret, Tablature tablature) {
             this.note = note;
             this.stringIndex = stringIndex;
             this.fret = fret;
+            this.tablature = tablature;
         }
 
         public Note getNote() {
@@ -72,10 +79,12 @@ public class Tablature implements Comparable<Tablature> {
 
         public void setStringIndex(int stringIndex) {
             this.stringIndex = stringIndex;
+            this.tablature.invalidateCache();
         }
 
         public void setFret(int fret) {
             this.fret = fret;
+            this.tablature.invalidateCache();
         }
 
         @Override
@@ -97,7 +106,9 @@ public class Tablature implements Comparable<Tablature> {
     public Tablature(Tablature tablature) {
         this.tuning = tablature.tuning;
         this.tablatureNotes = new ArrayList<>();
-        this.tablatureNotes.addAll(tablature.tablatureNotes);
+        for(TablatureNote tablatureNote : tablature.tablatureNotes) {
+            this.tablatureNotes.add(new TablatureNote(tablatureNote.note, tablatureNote.stringIndex, tablatureNote.fret, this));
+        }
         this.capoFret = tablature.capoFret;
     }
 
@@ -119,17 +130,30 @@ public class Tablature implements Comparable<Tablature> {
         return capoFret;
     }
 
+    public int getFitness() {
+        if(this.fitness == null) {
+            this.fitness = Optimiser.fitness(this);
+        }
+        return this.fitness;
+    }
+
     public void setTuning(int[] tuning) {
         this.tuning = tuning;
+        this.invalidateCache();
     }
 
     public void setCapoFret(int capoFret) {
         this.capoFret = capoFret;
     }
 
+    private void invalidateCache() {
+        this.fitness = null;
+    }
+
     public void addNote(Note note, int string, int fret) {
-        TablatureNote tablatureNote = new TablatureNote(note, string, fret);
+        TablatureNote tablatureNote = new TablatureNote(note, string, fret, this);
         this.tablatureNotes.add(tablatureNote);
+        this.invalidateCache();
     }
 
     /**
@@ -158,7 +182,7 @@ public class Tablature implements Comparable<Tablature> {
     public void findCapoFret() {
         int maximumCapo = 7;
         int bestCapo = 0;
-        int bestScore = Optimiser.fitness(this); // No capo
+        int bestScore = this.getFitness(); // No capo
         int maximumFret = this.tablatureNotes // Highest fret
                 .stream()
                 .mapToInt(TablatureNote::getFret)
@@ -171,7 +195,7 @@ public class Tablature implements Comparable<Tablature> {
             Tablature candidate = new Tablature(this);
             candidate.capoFret = i;
             candidate.transpose();
-            int score = Optimiser.fitness(candidate);
+            int score = candidate.getFitness();
             if (score > bestScore) {
                 bestScore = score;
                 bestCapo = i;
@@ -224,6 +248,7 @@ public class Tablature implements Comparable<Tablature> {
             tablatureNote.setStringIndex(bestString);
             tablatureNote.setFret(bestFret - this.capoFret);
         }
+        this.invalidateCache();
     }
 
     /**
@@ -267,10 +292,11 @@ public class Tablature implements Comparable<Tablature> {
             tablatureNote.setStringIndex(bestString);
             tablatureNote.setFret(bestFret);
         }
+        this.invalidateCache();
     }
 
     @Override
     public int compareTo(Tablature other) {
-        return Optimiser.fitness(other) - Optimiser.fitness(this);
+        return other.getFitness() - this.getFitness();
     }
 }

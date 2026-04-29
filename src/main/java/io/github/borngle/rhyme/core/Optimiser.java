@@ -24,8 +24,9 @@ public class Optimiser {
      * @param populationSize how many tablatures there are
      * @param notes the notes read from the MIDI file
      * @param mutationRate the rate at which mutation occurs
+     * @param targetTuning a desired tuning the tablature should be in if it is valid
      **/
-    public Optimiser(int populationSize, ArrayList<Note> notes, double mutationRate) {
+    public Optimiser(int populationSize, ArrayList<Note> notes, double mutationRate, int[] targetTuning) {
         int[] tuning;
         this.populationSize = populationSize;
         this.population = new ArrayList<>();
@@ -33,11 +34,16 @@ public class Optimiser {
                 .filter(candidate -> isValidTuning(candidate, notes))
                 .toList();
         for(int i = 0; i < populationSize; i++) {
-            if(random.nextDouble() < 0.7 && validTunings.contains(eStandard)) { // 70% chance to be eStandard if eStandard is valid
-                tuning = eStandard;
+            if(targetTuning != null && validTunings.contains(targetTuning)) {
+                tuning = targetTuning;
             }
             else {
-                tuning = validTunings.get(random.nextInt(validTunings.size()));
+                if(random.nextDouble() < 0.7 && validTunings.contains(eStandard)) { // 70% chance to be eStandard if eStandard is valid
+                    tuning = eStandard;
+                }
+                else {
+                    tuning = validTunings.get(random.nextInt(validTunings.size()));
+                }
             }
             this.population.add(this.generateTablature(notes, tuning));
         }
@@ -98,7 +104,7 @@ public class Optimiser {
         for(int i = 0; i < chords.size(); i++) {
             chordSpanPenalty += getChordSpanPenalty(chords.get(i));
         }
-        if(Arrays.stream(commonTunings).anyMatch(tuning -> Arrays.equals(tuning, tablature.getTuning()))) {
+        if(commonTunings.contains(Arrays.stream(tablature.getTuning()).boxed().toList())) {
             tuningReward = 35 * tablatureNotes.size();
         }
         for(int i = 0; i < tablatureNotes.size(); i++) {
@@ -118,7 +124,8 @@ public class Optimiser {
             }
         }
         score += openReward + tuningReward - fretBiasPenalty - (5 * stringJumpPenalty) -
-                fretJumpPenalty - (5 * spanPenalty) - (8 * neighbourPenalty) - 20 * (chordSpanPenalty);
+                fretJumpPenalty - (5 * spanPenalty) - (8 * neighbourPenalty)
+                - (20 * tablatureNotes.size() / 10 * chordSpanPenalty);
         return score;
     }
 
@@ -227,33 +234,29 @@ public class Optimiser {
     }
 
     /**
-     * Calculates the distance a hand is stretched across the notes in a chord, and penalises distances above 4 frets.
+     * Calculates the distance a hand is stretched across the notes in a chord, and penalises stretches wider than
+     * the comfortable span for that position.
      *
      * @param chord a group of simultaneously played notes
      * @return the chord span penalty
      */
     private static int getChordSpanPenalty(ArrayList<Tablature.TablatureNote> chord) {
-        int maximumFret = Integer.MIN_VALUE;
-        int minimumFret = Integer.MAX_VALUE;
-        for(int i = 0; i < chord.size(); i++) {
-            if(chord.get(i).getFret() == 0) {
-                continue;
-            }
-            if(chord.get(i).getFret() > maximumFret) {
-                maximumFret = chord.get(i).getFret();
-            }
-            if(chord.get(i).getFret() < minimumFret) {
-                minimumFret = chord.get(i).getFret();
-            }
-        }
-        if(minimumFret == Integer.MAX_VALUE) { // Never set (all notes open)
-            return 0;
-        }
         int penalty = 0;
-        int comfortableSpan = 4 + (minimumFret / 5); // 4 frets is a good baseline for span
-        int actualSpan = maximumFret - minimumFret;
-        if(actualSpan > comfortableSpan) {
-            penalty = (int) Math.pow(actualSpan - comfortableSpan, 2);
+        // Finding pairwise distances between notes in a chord
+        for(int i = 0; i < chord.size(); i++) {
+            for(int j = i + 1; j < chord.size(); j++) {
+                if(chord.get(i).getFret() == 0 || chord.get(j).getFret() == 0) {
+                    continue; // Skip open strings
+                }
+                int fretDifference = Math.abs(chord.get(i).getFret() - chord.get(j).getFret());
+                int stringDifference = Math.abs(chord.get(i).getStringIndex() - chord.get(j).getStringIndex());
+                int minimumFret = Math.min(chord.get(i).getFret(), chord.get(j).getFret()); // Easier to stretch higher up the fretboard
+                int comfortableSpan = 4 + (minimumFret / 7);
+                if(fretDifference > comfortableSpan) {
+                    int excess = fretDifference - comfortableSpan;
+                    penalty += (int) Math.pow(excess, 2) * Math.max(1, stringDifference); // Stretch is easier between adjacent strings, so further apart is penalised
+                }
+            }
         }
         return penalty;
     }

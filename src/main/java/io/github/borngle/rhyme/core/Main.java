@@ -33,6 +33,7 @@ public class Main {
         timeSignature = Reader.getTimeSignature(song);
         ArrayList<ArrayList<Note>> songTracks = Reader.readSong(song);
         StringBuilder songTablature = new StringBuilder();
+        int[] targetTuning = Tablature.eStandard;
         for(int i = 0; i < songTracks.size(); i++) {
             ArrayList<Note> track = songTracks.get(i);
             if(songTracks.size() > 1) {
@@ -40,7 +41,7 @@ public class Main {
             }
             int generations = 500;
             int populationSize = 1000;
-            Tablature tablature = optimise(new Optimiser(populationSize, track, 0.05), generations, 0.1, 0.2);
+            Tablature tablature = optimise(new Optimiser(populationSize, track, 0.05, targetTuning), generations, 0.1, 0.2);
             int capo = tablature.getCapoFret();
             if(tablature.getCapoFret() > 0) {
                 tablature.transpose();
@@ -63,16 +64,17 @@ public class Main {
         int selectionSize = (int) (selectionPressure * optimiser.getPopulationSize());
         int elitePoolSize = (int) (selectionSize * elitePool);
         for(int i = 0; i < generations; i++) {
-            Collections.sort(optimiser.getPopulation());
-            while(optimiser.getPopulation().size() > selectionSize) { // Remove bottom x%
-                optimiser.getPopulation().removeLast();
+            ArrayList<Tablature> population = optimiser.getPopulation();
+            Collections.sort(population);
+            while(population.size() > selectionSize) { // Remove bottom x%
+                population.removeLast();
             }
-            while(optimiser.getPopulation().size() < optimiser.getPopulationSize()) { // Building population back up
+            while(population.size() < optimiser.getPopulationSize()) { // Building population back up
                 int elite = random.nextInt(elitePoolSize); // Random elite genome
                 int other = random.nextInt(selectionSize - elitePoolSize) + elitePoolSize; // Tablature within remaining population but not elite
-                Tablature child = optimiser.crossover(optimiser.getPopulation().get(elite), optimiser.getPopulation().get(other));
+                Tablature child = optimiser.crossover(population.get(elite), population.get(other));
                 optimiser.mutate(child);
-                optimiser.getPopulation().add(child);
+                population.add(child);
             }
         }
         Collections.sort(optimiser.getPopulation());

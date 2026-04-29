@@ -97,7 +97,7 @@ public class StatisticalTest {
         double[] scores = new double[songs.size()];
         for (int i = 0; i < songs.size(); i++) {
             Main.random.setSeed(seed + i);
-            Optimiser optimiser = new Optimiser(populationSize, songs.get(i), mutationRate);
+            Optimiser optimiser = new Optimiser(populationSize, songs.get(i), mutationRate, null);
             Tablature result = Main.optimise(optimiser, generations, selectionPressure, elitePool);
             scores[i] = Optimiser.fitness(result);
             System.out.println("Song " +  i + " done");
