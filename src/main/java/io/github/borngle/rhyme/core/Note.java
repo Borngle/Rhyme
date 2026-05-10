@@ -23,19 +23,16 @@ public class Note {
     private final int pitch; // MIDI note number
     private final long start;
     private long duration;
-    private final int velocity; // Hardness or softness of note
 
-    public Note(int pitch, long start, long duration, int velocity) {
+    public Note(int pitch, long start, long duration) {
         this.pitch = pitch;
         this.start = start;
         this.duration = duration;
-        this.velocity = velocity;
     }
 
-    public Note(int pitch, long start, int velocity) {
+    public Note(int pitch, long start) {
         this.pitch = pitch;
         this.start = start;
-        this.velocity = velocity;
     }
 
     public int getPitch() {
@@ -48,10 +45,6 @@ public class Note {
 
     public long getDuration() {
         return duration;
-    }
-
-    public int getVelocity() {
-        return velocity;
     }
 
     public void setDuration(long duration) {

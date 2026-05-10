@@ -34,32 +34,34 @@ public class Reader {
         try {
             sequence = MidiSystem.getSequence(song); // Load MIDI
         }
-        catch (InvalidMidiDataException | IOException e) {
+        catch(InvalidMidiDataException | IOException e) {
             throw new RuntimeException(e);
         }
         Track[] sequenceTracks = sequence.getTracks(); // Get all MIDI tracks from sequence
-        for (int i = 0; i < sequenceTracks.length; i++) {
+        for(int i = 0; i < sequenceTracks.length; i++) {
             ArrayList<Note> notes = new ArrayList<>(); // Completed notes for track
-            Map<Integer, Note> activeNotes = new HashMap<>(); // Notes that have started but not ended (pitch is key)
-            for (int j = 0; j < sequenceTracks[i].size(); j++) {
+            Map<Integer, Note> activeNotes = new HashMap<>(); // Notes that have started but not ended (channel and pitch is key)
+            for(int j = 0; j < sequenceTracks[i].size(); j++) {
                 MidiEvent event = sequenceTracks[i].get(j); // Get MidiEvent from track
                 MidiMessage message = event.getMessage(); // Get MidiMessage
                 long tick = event.getTick(); // Timestamp
-                if (message instanceof ShortMessage) { // Refers to the channel and note
+                if(message instanceof ShortMessage) { // Refers to the channel and note
                     ShortMessage shortMessage = (ShortMessage) message;
                     int command = shortMessage.getCommand(); // Type of event
                     int pitch = shortMessage.getData1();
+                    int channel = shortMessage.getChannel();
+                    int key = channel * 128 + pitch;
                     int velocity = shortMessage.getData2(); // How hard note was struck (volume)
                     // velocity > 0 means start note
                     if(command == ShortMessage.NOTE_ON && velocity > 0) {
-                        Note note = new Note(pitch, tick, velocity);
-                        activeNotes.put(pitch, note); // Keep until it turns off
+                        Note note = new Note(pitch, tick);
+                        activeNotes.put(key, note); // Keep until it turns off
                         notes.add(note);
                     }
                     // NOTE_ON with velocity == 0 means note off
-                    else if (command == ShortMessage.NOTE_OFF || command == ShortMessage.NOTE_ON && velocity == 0) {
-                        Note note = activeNotes.remove(pitch);
-                        if (note != null) {
+                    else if(command == ShortMessage.NOTE_OFF || command == ShortMessage.NOTE_ON && velocity == 0) {
+                        Note note = activeNotes.remove(key);
+                        if(note != null) {
                             note.setDuration(tick - note.getStart());
                         }
                     }
@@ -83,7 +85,7 @@ public class Reader {
         try {
             resolution = MidiSystem.getSequence(song).getResolution();
         }
-        catch (InvalidMidiDataException | IOException e) {
+        catch(InvalidMidiDataException | IOException e) {
             throw new RuntimeException(e);
         }
         return resolution;
@@ -100,17 +102,17 @@ public class Reader {
         try {
             sequence = MidiSystem.getSequence(song);
         }
-        catch (InvalidMidiDataException | IOException e) {
+        catch(InvalidMidiDataException | IOException e) {
             throw new RuntimeException(e);
         }
         Track[] tracks = sequence.getTracks();
-        for (int i = 0; i < tracks.length; i++) {
-            for (int j = 0; j < tracks[i].size(); j++) {
+        for(int i = 0; i < tracks.length; i++) {
+            for(int j = 0; j < tracks[i].size(); j++) {
                 MidiEvent event = tracks[i].get(j); // Get MidiEvent from track
                 MidiMessage message = event.getMessage(); // Get MidiMessage
-                if (message instanceof MetaMessage) { // Refers to song data
+                if(message instanceof MetaMessage) { // Refers to song data
                     MetaMessage metaMessage = (MetaMessage) message;
-                    if (metaMessage.getType() == 0x58) { // Time signature
+                    if(metaMessage.getType() == 0x58) { // Time signature
                         byte[] data = metaMessage.getData();
                         int numerator = data[0] & 0xFF; // Beats per bar
                         // Denominator is a power of 2

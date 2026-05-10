@@ -26,7 +26,7 @@ public class Tablature implements Comparable<Tablature> {
     final static int[] openC = new int[]{64, 60, 55, 48, 43, 36};
     final static int[] openA = new int[]{69, 64, 57, 52, 45, 40};
     final static int[] openE = new int[]{64, 59, 56, 52, 47, 40};
-    final static int[] openF = new int[]{65, 60, 53, 48, 45, 41};
+    final static int[] openF = new int[]{65, 60, 57, 53, 48, 41};
     final static int[] halfStepDown = new int[]{63, 58, 54, 49, 44, 39};
     final static int[] halfStepUp = new int[]{65, 60, 56, 51, 46, 41};
     final static int[] dropD = new int[]{64, 59, 55, 50, 45, 38};
@@ -34,12 +34,15 @@ public class Tablature implements Comparable<Tablature> {
     final static int[] dropC = new int[]{62, 57, 53, 48, 43, 36};
     final static int[] dropB = new int[]{61, 56, 52, 47, 42, 35};
     final static int[] DADGAD = new int[]{62, 57, 55, 50, 45, 38};
+    static final int[] lute = new int[]{67, 62, 57, 53, 48, 43}; // G4 D4 A3 F3 C3 G2
+    // My own specific selection of tunings for songs I am testing
+    static final int[] FADGBE = new int[]{64, 59, 55, 50, 45, 41};
 
     final static int[][] allTunings = new int[][]{
             eStandard, dStandard, bStandard, openG,
             openD, openC, openA, openE,
             openF, halfStepDown, halfStepUp, dropD,
-            dropCSharp, dropC, dropB, DADGAD
+            dropCSharp, dropC, dropB, DADGAD, lute, FADGBE
     };
 
     final static Set<List<Integer>> commonTunings = Set.of(
@@ -150,6 +153,14 @@ public class Tablature implements Comparable<Tablature> {
         this.fitness = null;
     }
 
+    /**
+     * Creates a {@link Tablature.TablatureNote} from a provided {@code note} and {@code string} and {@code fret} position,
+     * adding it to {@code tablatureNotes}.
+     *
+     * @param note the {@link Note} object
+     * @param string the chosen string index
+     * @param fret the chosen fret
+     */
     public void addNote(Note note, int string, int fret) {
         TablatureNote tablatureNote = new TablatureNote(note, string, fret, this);
         this.tablatureNotes.add(tablatureNote);
@@ -215,8 +226,7 @@ public class Tablature implements Comparable<Tablature> {
         for(int i = 0; i < this.tablatureNotes.size(); i++) {
             TablatureNote tablatureNote = this.tablatureNotes.get(i);
             Map<Integer, Integer> fretPositions = tablatureNote.getNote().getFretPositions(this.tuning);
-            boolean hasAlternative = fretPositions.values().stream()
-                    .anyMatch(fret -> fret >= candidateCapo);
+            boolean hasAlternative = fretPositions.values().stream().anyMatch(fret -> fret >= candidateCapo);
             if(!hasAlternative) {
                 return false;
             }
@@ -229,7 +239,7 @@ public class Tablature implements Comparable<Tablature> {
      * relative position for that capo fret.
      */
     public void transpose() {
-        if (this.capoFret == 0) {
+        if(this.capoFret == 0) {
             return;
         }
         for(int i = 0; i < this.tablatureNotes.size(); i++) {
@@ -268,6 +278,12 @@ public class Tablature implements Comparable<Tablature> {
         return true;
     }
 
+    /**
+     * Maps each {@link Tablature.TablatureNote} to its closest valid fret position in the current tuning.
+     *
+     * <p>This achieves it by evaluating all available positions and selecting the one with minimal weighted fret/string distance. Used when
+     * tuning changes or during crossover.</p>
+     */
     public void map() {
         for(int i = 0; i < this.tablatureNotes.size(); i++) {
             TablatureNote tablatureNote = this.tablatureNotes.get(i);

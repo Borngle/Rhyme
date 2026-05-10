@@ -24,7 +24,8 @@ public class Main {
     final static Random random = new Random();
 
     public static void main(String[] args) {
-        if (args.length == 0) {
+        // TODO: read configuration attributes from program arguments
+        if(args.length == 0) {
             return;
         }
         File song = new File(args[0]);
@@ -33,13 +34,13 @@ public class Main {
         timeSignature = Reader.getTimeSignature(song);
         ArrayList<ArrayList<Note>> songTracks = Reader.readSong(song);
         StringBuilder songTablature = new StringBuilder();
-        int[] targetTuning = Tablature.eStandard;
+        int[] targetTuning = Tablature.openC;
         for(int i = 0; i < songTracks.size(); i++) {
             ArrayList<Note> track = songTracks.get(i);
             if(songTracks.size() > 1) {
                 songTablature.append("\nTrack: ").append(i + 1).append("\n"); // Formatting for multi-track songs
             }
-            int generations = 500;
+            int generations = 2000;
             int populationSize = 1000;
             Tablature tablature = optimise(new Optimiser(populationSize, track, 0.05, targetTuning), generations, 0.1, 0.2);
             int capo = tablature.getCapoFret();
@@ -54,8 +55,9 @@ public class Main {
 
     /**
      * Runs the genetic algorithm over a given number of {@code generations}.
+     *
      * @param optimiser the genetic algorithm
-     * @param generations the number of generations fitness, crossover, and mutation runs for
+     * @param generations the number of iterations fitness, crossover, and mutation runs for
      * @param selectionPressure the percentage of genomes kept after a generation
      * @param elitePool the percentage of the highest scoring genomes from the selected population to be chosen for crossover
      * @return the best scoring {@link Tablature}
@@ -64,6 +66,7 @@ public class Main {
         int selectionSize = (int) (selectionPressure * optimiser.getPopulationSize());
         int elitePoolSize = (int) (selectionSize * elitePool);
         for(int i = 0; i < generations; i++) {
+            System.out.println(i);
             ArrayList<Tablature> population = optimiser.getPopulation();
             Collections.sort(population);
             while(population.size() > selectionSize) { // Remove bottom x%
@@ -85,6 +88,7 @@ public class Main {
 
     /**
      * Prints and writes tablature to a text file.
+     *
      * @param songName the name of the supplied MIDI file
      * @param songTablature the rendered tablature
      */

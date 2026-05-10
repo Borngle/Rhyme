@@ -22,7 +22,7 @@ public class Optimiser {
      * Generates a random initial population of tablatures.
      *
      * @param populationSize how many tablatures there are
-     * @param notes the notes read from the MIDI file
+     * @param notes the {@code ArrayList} of {@link Note} objects read from the MIDI file
      * @param mutationRate the rate at which mutation occurs
      * @param targetTuning a desired tuning the tablature should be in if it is valid
      **/
@@ -112,7 +112,7 @@ public class Optimiser {
             if(tablatureNote.getFret() == 0) {
                 openReward += 5;
             }
-            fretBiasPenalty += (int) Math.pow(tablatureNote.getFret(), 1.25);
+            fretBiasPenalty += (int) Math.pow(tablatureNote.getFret(), 1.5);
             spanPenalty += getSpanPenalty(i, tablatureNotes);
             neighbourPenalty += getAverageFretDistance(i, tablatureNotes);
             if(i != 0) { // If not the first note
@@ -133,8 +133,8 @@ public class Optimiser {
      * Calculates the span of frets in the window of notes around {@code note}, and penalises spans
      * wider than 4 frets. Concerns the local hand position spread over time.
      *
-     * @param note the current note
-     * @param tablatureNotes the sequence of notes in the song
+     * @param note the current note index
+     * @param tablatureNotes the sequence of notes in the {@link Tablature}
      * @return the span penalty
      */
     private static int getSpanPenalty(int note, ArrayList<Tablature.TablatureNote> tablatureNotes) {
@@ -143,15 +143,15 @@ public class Optimiser {
         int end = Math.min(tablatureNotes.size() - 1, note + surroundingNotes / 2);
         int minimumFret = Integer.MAX_VALUE;
         int maximumFret = 0;
-        for (int i = start; i <= end; i++) {
+        for(int i = start; i <= end; i++) {
             int fret = tablatureNotes.get(i).getFret();
-            if (fret == 0) {
+            if(fret == 0) {
                 continue;
             }
             minimumFret = Math.min(minimumFret, fret);
             maximumFret = Math.max(maximumFret, fret);
         }
-        if (minimumFret == Integer.MAX_VALUE) {
+        if(minimumFret == Integer.MAX_VALUE) {
             return 0;
         }
         int span = maximumFret - minimumFret;
@@ -167,8 +167,8 @@ public class Optimiser {
     /**
      * Calculates the average distance between {@code note} and its surrounding notes.
      *
-     * @param note the current note
-     * @param tablatureNotes the sequence of notes in the song
+     * @param note the current note index
+     * @param tablatureNotes the sequence of notes in the {@link Tablature}
      * @return the average fret distance
      */
     private static int getAverageFretDistance(int note, ArrayList<Tablature.TablatureNote> tablatureNotes) {
@@ -177,16 +177,16 @@ public class Optimiser {
         int start = Math.max(0, note - surroundingNotes / 2); // Always above start of array
         int end = Math.min(tablatureNotes.size() - 1, note + surroundingNotes / 2); // Always before end of array
         // Expand window if not enough neighbours (still within bounds)
-        while ((end - start) < surroundingNotes && end < tablatureNotes.size() - 1) {
+        while((end - start) < surroundingNotes && end < tablatureNotes.size() - 1) {
             end++;
         }
-        while ((end - start) < surroundingNotes && start > 0) {
+        while((end - start) < surroundingNotes && start > 0) {
             start--;
         }
         double totalDifference = 0;
         int count = 0;
-        for (int i = start; i <= end; i++) {
-            if (i == note) {
+        for(int i = start; i <= end; i++) {
+            if(i == note) {
                 continue; // Skip current element
             }
             totalDifference += Math.abs(tablatureNotes.get(note).getFret() - tablatureNotes.get(i).getFret());
@@ -204,8 +204,8 @@ public class Optimiser {
     /**
      * Retrieves chords in a song by grouping simultaneously played notes.
      *
-     * @param tablatureNotes the sequence of notes in the song
-     * @return collections of chords
+     * @param tablatureNotes the sequence of notes in the {@link Tablature}
+     * @return a 2D {@code ArrayList} of {@link Tablature.TablatureNote}s representing chords
      */
     private static ArrayList<ArrayList<Tablature.TablatureNote>> getChords(ArrayList<Tablature.TablatureNote> tablatureNotes) {
         ArrayList<ArrayList<Tablature.TablatureNote>> chords = new ArrayList<>();
@@ -264,7 +264,7 @@ public class Optimiser {
     /**
      * Combines two parent tablatures to form a new child tablature.
      *
-     * <p>Randomly selects a point from {@code first}, where thereafter it is replaced by {@code second}.</p>
+     * <p>Randomly selects two points from {@code first}, where the segment in between is replaced with {@code second}.</p>
      *
      * @param first the first {@link Tablature}
      * @param second the second {@link Tablature}
@@ -275,7 +275,7 @@ public class Optimiser {
         int secondCrossoverPoint = random.nextInt(first.getTablatureNotes().size());
         int firstBar = first.getTablatureNotes().get(firstCrossoverPoint).getNote().getBar();
         int secondBar = first.getTablatureNotes().get(secondCrossoverPoint).getNote().getBar();
-        if (firstBar > secondBar) { // Ensuring first crossover point is before second
+        if(firstBar > secondBar) { // Ensuring first crossover point is before second
             int temp = firstBar;
             firstBar = secondBar;
             secondBar = temp;

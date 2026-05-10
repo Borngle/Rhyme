@@ -1,7 +1,7 @@
 /**
  * File: TypeSetter.java
  *
- * <p>Brief: Converts a {@link Tablature} object into ASCII format.</p>
+ * <p>Brief: Converts a {@link Tablature} object into tablature notation by rendering to ASCII format.</p>
  *
  * <p>Details: Provides functions for generating and outputting a guitar tablature.</p>
  *
@@ -44,11 +44,11 @@ public class TypeSetter {
         int ticksPerSubdivision = resolution / 8; // 1/32nd notes (8 per quarter)
         int subdivisions = ticksPerBar / ticksPerSubdivision;
         StringBuilder finalTablature = new StringBuilder();
-        for (int i = 0; i < totalBars; i++) {
+        for(int i = 0; i < totalBars; i++) {
             int barStartTick = i * ticksPerBar; // Tick position of first beat of bar
             ArrayList<Tablature.TablatureNote> bar = tablature.getBar(i + 1);
             String[][] barTablature = new String[tablature.getTuning().length][subdivisions];
-            for (String[] strings : barTablature) {
+            for(String[] strings : barTablature) {
                 Arrays.fill(strings, "--");
             }
             if(bar.isEmpty()) { // Ignore empty bars
@@ -61,7 +61,7 @@ public class TypeSetter {
                 int gridPosition = (int) Math.floor(fractionOfBar * subdivisions) + 2; // + 2 to account for string note and "|"
                 gridPosition = Math.min(gridPosition, subdivisions - 2); // Bounds check
                 String fret = String.valueOf(tablatureNote.getFret());
-                if (fret.length() < 2) { // Single digit fret, so needs an additional "-" to keep tablature width consistent
+                if(fret.length() < 2) { // Single digit fret, so needs an additional "-" to keep tablature width consistent
                     fret = fret + "-";
                 }
                 barTablature[tablatureNote.getStringIndex() - 1][gridPosition] = fret;
@@ -97,10 +97,10 @@ public class TypeSetter {
      * @param tablature the song tablature
      **/
     public static void writeFile(String song, String tablature) {
-        try (FileWriter fileWriter = new FileWriter(song + ".txt", false)) {
+        try(FileWriter fileWriter = new FileWriter(song + ".txt", false)) {
             fileWriter.write("Song: " + song + "\n" + "Timing: " + timeSignature[0] + "/" + timeSignature[1] + "\n\n" + tablature);
         }
-        catch (IOException e) {
+        catch(IOException e) {
             e.printStackTrace();
         }
     }
