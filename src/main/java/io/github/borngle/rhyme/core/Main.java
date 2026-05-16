@@ -40,7 +40,7 @@ public class Main {
             if(songTracks.size() > 1) {
                 songTablature.append("\nTrack: ").append(i + 1).append("\n"); // Formatting for multi-track songs
             }
-            int generations = 2000;
+            int generations = 500;
             int populationSize = 1000;
             Tablature tablature = optimise(new Optimiser(populationSize, track, 0.05, targetTuning), generations, 0.1, 0.2);
             int capo = tablature.getCapoFret();
@@ -66,7 +66,6 @@ public class Main {
         int selectionSize = (int) (selectionPressure * optimiser.getPopulationSize());
         int elitePoolSize = (int) (selectionSize * elitePool);
         for(int i = 0; i < generations; i++) {
-            System.out.println(i);
             ArrayList<Tablature> population = optimiser.getPopulation();
             Collections.sort(population);
             while(population.size() > selectionSize) { // Remove bottom x%
@@ -82,6 +81,7 @@ public class Main {
         }
         Collections.sort(optimiser.getPopulation());
         Tablature best = optimiser.getPopulation().getFirst();
+        // TODO: target capo
         best.findCapoFret();
         return best;
     }

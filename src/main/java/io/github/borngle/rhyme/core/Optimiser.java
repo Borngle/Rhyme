@@ -33,6 +33,9 @@ public class Optimiser {
         List<int[]> validTunings = Arrays.stream(allTunings)
                 .filter(candidate -> isValidTuning(candidate, notes))
                 .toList();
+        if(validTunings.isEmpty()) {
+            System.err.println("No valid tuning exists for this note set: check MIDI range against defined tunings");
+        }
         for(int i = 0; i < populationSize; i++) {
             if(targetTuning != null && validTunings.contains(targetTuning)) {
                 tuning = targetTuning;
@@ -112,7 +115,7 @@ public class Optimiser {
             if(tablatureNote.getFret() == 0) {
                 openReward += 5;
             }
-            fretBiasPenalty += (int) Math.pow(tablatureNote.getFret(), 1.5);
+            fretBiasPenalty += (int) Math.pow(tablatureNote.getFret(), 2.5);
             spanPenalty += getSpanPenalty(i, tablatureNotes);
             neighbourPenalty += getAverageFretDistance(i, tablatureNotes);
             if(i != 0) { // If not the first note
@@ -280,13 +283,25 @@ public class Optimiser {
             firstBar = secondBar;
             secondBar = temp;
         }
-        Tablature crossoverTablature;
-        if(random.nextDouble() < 0.5) {
-            crossoverTablature = new Tablature(first.getTuning());
+        int secondSize = 0;
+        for(int i = 0; i < first.getTablatureNotes().size(); i++) {
+            int currentBar = first.getTablatureNotes().get(i).getNote().getBar();
+            if(currentBar >= firstBar && currentBar <= secondBar) {
+                secondSize++;
+            }
+        }
+        int firstSize = first.getTablatureNotes().size() - secondSize;
+        int[] tuning;
+        if(firstSize > secondSize) {
+            tuning = first.getTuning();
+        }
+        else if(secondSize > firstSize) {
+            tuning = second.getTuning();
         }
         else {
-            crossoverTablature = new Tablature(second.getTuning());
+            tuning = first.getTuning();
         }
+        Tablature crossoverTablature = new Tablature(tuning);
         // Adds all notes from first up to the end of the random bar crossover point, then from second
         for(int i = 0; i < first.getTablatureNotes().size(); i++) {
             int currentBar = first.getTablatureNotes().get(i).getNote().getBar();
@@ -303,7 +318,7 @@ public class Optimiser {
                 crossoverTablature.addNote(note, stringIndex, fret);
             }
         }
-        crossoverTablature.map();
+        crossoverTablature.map(crossoverTablature.getTuning());
         return crossoverTablature;
     }
 
@@ -394,7 +409,7 @@ public class Optimiser {
             }
             if(isValidTuning(newTuning, tablature.getNotes())) {
                 tablature.setTuning(newTuning);
-                tablature.map();
+                tablature.map(newTuning);
             }
         }
     }

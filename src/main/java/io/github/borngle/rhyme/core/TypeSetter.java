@@ -38,6 +38,7 @@ public class TypeSetter {
      * @return a formatted {@code String} tablature
      **/
     public static String render(Tablature tablature) {
+        // TODO: could indicate how many times repeating bars/sections are played with a '* x'
         int totalBars = tablature.getNotes().getLast().getBar();
         // 4 / denominator converts denominator note value to quarter note value
         int ticksPerBar = (int) (resolution * ((4.0 / timeSignature[1]) * timeSignature[0]));

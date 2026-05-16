@@ -37,12 +37,13 @@ public class Tablature implements Comparable<Tablature> {
     static final int[] lute = new int[]{67, 62, 57, 53, 48, 43}; // G4 D4 A3 F3 C3 G2
     // My own specific selection of tunings for songs I am testing
     static final int[] FADGBE = new int[]{64, 59, 55, 50, 45, 41};
+    static final int[] GGDGBD = new int[]{62, 59, 55, 50, 43, 43};
 
     final static int[][] allTunings = new int[][]{
             eStandard, dStandard, bStandard, openG,
             openD, openC, openA, openE,
             openF, halfStepDown, halfStepUp, dropD,
-            dropCSharp, dropC, dropB, DADGAD, lute, FADGBE
+            dropCSharp, dropC, dropB, DADGAD, lute, FADGBE, GGDGBD
     };
 
     final static Set<List<Integer>> commonTunings = Set.of(
@@ -194,20 +195,23 @@ public class Tablature implements Comparable<Tablature> {
         int maximumCapo = 7;
         int bestCapo = 0;
         int bestScore = this.getFitness(); // No capo
-        int maximumFret = this.tablatureNotes // Highest fret
-                .stream()
-                .mapToInt(TablatureNote::getFret)
-                .max().orElse(0);
+        int maximumFret = 0;
+        for(int i = 0; i < this.tablatureNotes.size(); i++) {
+            int fret = this.tablatureNotes.get(i).getFret();
+            if(fret > maximumFret) {
+                maximumFret = fret; // Highest fret
+            }
+        }
         int upperBound = Math.min(maximumFret, maximumCapo);
         for(int i = 1; i <= upperBound; i++) { // Ignore 0 by default
-            if (!isValidCapo(i)) {
+            if(!isValidCapo(i)) {
                 continue;
             }
             Tablature candidate = new Tablature(this);
             candidate.capoFret = i;
             candidate.transpose();
             int score = candidate.getFitness();
-            if (score > bestScore) {
+            if(score > bestScore) {
                 bestScore = score;
                 bestCapo = i;
             }
@@ -226,7 +230,13 @@ public class Tablature implements Comparable<Tablature> {
         for(int i = 0; i < this.tablatureNotes.size(); i++) {
             TablatureNote tablatureNote = this.tablatureNotes.get(i);
             Map<Integer, Integer> fretPositions = tablatureNote.getNote().getFretPositions(this.tuning);
-            boolean hasAlternative = fretPositions.values().stream().anyMatch(fret -> fret >= candidateCapo);
+            boolean hasAlternative = false;
+            for(int fret : fretPositions.values()) {
+                if(fret >= candidateCapo) {
+                    hasAlternative = true;
+                    break;
+                }
+            }
             if(!hasAlternative) {
                 return false;
             }
@@ -283,11 +293,13 @@ public class Tablature implements Comparable<Tablature> {
      *
      * <p>This achieves it by evaluating all available positions and selecting the one with minimal weighted fret/string distance. Used when
      * tuning changes or during crossover.</p>
+     *
+     * @param tuning a target tuning
      */
-    public void map() {
+    public void map(int[] tuning) {
         for(int i = 0; i < this.tablatureNotes.size(); i++) {
             TablatureNote tablatureNote = this.tablatureNotes.get(i);
-            Map<Integer, Integer> fretPositions = tablatureNote.note.getFretPositions(this.tuning);
+            Map<Integer, Integer> fretPositions = tablatureNote.note.getFretPositions(tuning);
             int closestScore = Integer.MAX_VALUE;
             int bestFret = tablatureNote.fret;
             int bestString = tablatureNote.stringIndex;
