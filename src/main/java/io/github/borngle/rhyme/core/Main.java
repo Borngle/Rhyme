@@ -34,7 +34,7 @@ public class Main {
         timeSignature = Reader.getTimeSignature(song);
         ArrayList<ArrayList<Note>> songTracks = Reader.readSong(song);
         StringBuilder songTablature = new StringBuilder();
-        int[] targetTuning = Tablature.openC;
+        int[] targetTuning = Tablature.eStandard;
         for(int i = 0; i < songTracks.size(); i++) {
             ArrayList<Note> track = songTracks.get(i);
             if(songTracks.size() > 1) {
@@ -96,6 +96,6 @@ public class Main {
         System.out.println("Song: " + songName);
         System.out.println("Timing: " + timeSignature[0] + "/" + timeSignature[1]);
         System.out.println(songTablature);
-        //TypeSetter.writeFile(songName, songTablature.toString());
+        TypeSetter.writeFile(songName, songTablature.toString());
     }
 }
