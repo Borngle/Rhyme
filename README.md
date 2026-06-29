@@ -1,5 +1,5 @@
 # Rhyme
-**Rhyme** is a MIDI-to-guitar-tablature transcriber.
+**Rhyme** is a MIDI-to-guitar-tablature transcriber developed in Java.
 
 ## Table of Contents
 * [Description](#description)
