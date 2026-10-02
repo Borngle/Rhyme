@@ -53,7 +53,7 @@ D |0-------------------------------0-------------------------|
 ## Usage
 This program only takes a single argument: the path to your MIDI file.
 
-### IntelliJ 
+### Choice IDE 
 Set the program argument in your run configuration to the path of your MIDI file:
 ```
 path/to/your/song.mid
