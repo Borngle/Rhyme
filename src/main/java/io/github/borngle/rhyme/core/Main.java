@@ -105,7 +105,7 @@ public class Main implements Runnable {
     @Override
     public void run() {
         if(listTunings) {
-            System.out.print(listTunings());
+            System.out.print(String.join("\n", Tablature.availableTunings));
             return;
         }
         validate();
@@ -199,13 +199,6 @@ public class Main implements Runnable {
                     "Error: Unknown tuning: '" + name + "'"
             );
         };
-    }
-
-    /**
-     * Outputs the available tunings.
-     */
-    private static String listTunings() {
-        return "Available tunings:\n" + String.join("\n", Tablature.availableTunings);
     }
 
     /**
