@@ -17,6 +17,7 @@ public class Optimiser {
     private int populationSize;
     private ArrayList<Tablature> population;
     private final double mutationRate;
+    private boolean allowTuningMutation;
 
     /**
      * Generates a random initial population of tablatures.
@@ -24,9 +25,10 @@ public class Optimiser {
      * @param populationSize how many tablatures there are
      * @param notes the {@code ArrayList} of {@link Note} objects read from the MIDI file
      * @param mutationRate the rate at which mutation occurs
-     * @param targetTuning a desired tuning the tablature should be in if it is valid
+     * @param targetTuning a desired tuning the tablature should be in if it is valid (can be null)
+     * @param allowTuningMutation if the tuning can be mutated
      **/
-    public Optimiser(int populationSize, ArrayList<Note> notes, double mutationRate, int[] targetTuning) {
+    public Optimiser(int populationSize, ArrayList<Note> notes, double mutationRate, int[] targetTuning, boolean allowTuningMutation) {
         int[] tuning;
         this.populationSize = populationSize;
         this.population = new ArrayList<>();
@@ -51,6 +53,7 @@ public class Optimiser {
             this.population.add(this.generateTablature(notes, tuning));
         }
         this.mutationRate = mutationRate;
+        this.allowTuningMutation = allowTuningMutation;
     }
 
     /**
@@ -329,7 +332,9 @@ public class Optimiser {
      */
     public void mutate(Tablature tablature) {
         mutateNotes(tablature);
-        //mutateTuning(tablature);
+        if(this.allowTuningMutation) {
+            mutateTuning(tablature);
+        }
     }
 
     /**

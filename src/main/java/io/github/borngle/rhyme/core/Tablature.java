@@ -39,6 +39,28 @@ public class Tablature implements Comparable<Tablature> {
     static final int[] FADGBE = new int[]{64, 59, 55, 50, 45, 41};
     static final int[] GGDGBD = new int[]{62, 59, 55, 50, 43, 43};
 
+    public static final String[] availableTunings = {
+            "eStandard",
+            "dStandard",
+            "bStandard",
+            "openG",
+            "openD",
+            "openC",
+            "openA",
+            "openE",
+            "openF",
+            "halfStepDown",
+            "halfStepUp",
+            "dropD",
+            "dropCSharp",
+            "dropC",
+            "dropB",
+            "DADGAD",
+            "lute",
+            "FADGBE",
+            "GGDGBD"
+    };
+
     final static int[][] allTunings = new int[][]{
             eStandard, dStandard, bStandard, openG,
             openD, openC, openA, openE,
