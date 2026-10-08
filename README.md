@@ -51,20 +51,35 @@ D |0-------------------------------0-------------------------|
 - Maven 3.9+
 
 ## Usage
-This program only takes a single argument: the path to your MIDI file.
+This program takes the path to your MIDI file as well as various optional arguments for configuring the GA and program behaviour.
 
-### Choice IDE 
-Set the program argument in your run configuration to the path of your MIDI file:
+### IDE
+Set the program arguments in your run configuration to the path of your MIDI file as well as any desired options:
 ```
 path/to/your/song.mid
 ```
 
 ### CLI
-Requires [Maven](https://maven.apache.org/download.cgi) to be installed and added to your system PATH. Navigate to the project root (where `pom.xml` is located) and build:
+Requires [Maven](https://maven.apache.org/download.cgi) to be installed and added to your system `PATH`. Navigate to the project root (where `pom.xml` is located) and build:
 ```
 mvn package
 ```
 Then run the generated JAR:
 ```
-java -jar target/rhyme-<version>.jar path/to/your/song.mid
+java -jar target/rhyme.jar path/to/your/song.mid
 ```
+
+### Options
+
+| Option | Description | Default |
+|---|---|---|
+| `-g, --generations=<count>` | Number of generations. | `500` |
+| `-m, --mutation=<rate>` | Mutation rate. | `0.05` |
+| `-p, --population=<size>` | Population size. | `1000` |
+| `-s, --selection=<rate>` | Selection pressure. | `0.1` |
+| `-t, --tuning=<name>` | Target tuning. | |
+| `--allow-tuning-mutation` | Allow the optimiser to mutate the tuning. | |
+| `--list-tunings` | List available tunings. | |
+| `-w, --write` | Write output to a file. | |
+| `-h, --help` | Show the help message and exit. | |
+| `-V, --version` | Print version information and exit. | |
