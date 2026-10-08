@@ -196,7 +196,7 @@ public class Main implements Runnable {
             case "GGDGBD" -> Tablature.GGDGBD;
             default -> throw new CommandLine.ParameterException(
                     new CommandLine(this),
-                    "Error: Unknown tuning: '" + name + "'."
+                    "Error: Unknown tuning: '" + name + "'"
             );
         };
     }
