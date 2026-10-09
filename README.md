@@ -54,8 +54,9 @@ D |0-------------------------------0-------------------------|
 This program takes the path to your MIDI file as well as various optional arguments for configuring the GA and program behaviour.
 
 ```
-Usage: rhyme [-hVw] [--allow-tuning-mutation] [--list-tunings] [-g=<count>]
-             [-m=<rate>] [-p=<size>] [-s=<rate>] [-t=<name>] [<midi-file>]
+Usage: rhyme [-hV] [--allow-tuning-mutation] [--list-tunings] [-o[=<file>]]
+             [-g=<count>] [-m=<rate>] [-p=<size>] [-s=<rate>] [-t=<name>]
+             [<midi-file>]
 Transcribe a MIDI file into guitar tablature.
       [<midi-file>]         MIDI file.
       --allow-tuning-mutation
@@ -64,11 +65,11 @@ Transcribe a MIDI file into guitar tablature.
   -h, --help                Show this help message and exit.
       --list-tunings        List available tunings.
   -m, --mutation=<rate>     Mutation rate (default : 0.05).
+  -o, --output[=<file>]     Output to a file.
   -p, --population=<size>   Population size (default : 1000).
   -s, --selection=<rate>    Selection pressure (default : 0.1).
   -t, --tuning=<name>       Target tuning.
   -V, --version             Print version information and exit.
-  -w, --write               Write output to a file.
 ```
 
 ### IDE
