@@ -248,7 +248,7 @@ public class Tablature implements Comparable<Tablature> {
      * @param candidateCapo the potential capo fret
      * @return true if the song has a valid capo transposition at {@code candidateCapo}, false otherwise
      */
-    private boolean isValidCapo(int candidateCapo) {
+    public boolean isValidCapo(int candidateCapo) {
         for(int i = 0; i < this.tablatureNotes.size(); i++) {
             TablatureNote tablatureNote = this.tablatureNotes.get(i);
             Map<Integer, Integer> fretPositions = tablatureNote.getNote().getFretPositions(this.tuning);

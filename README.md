@@ -55,12 +55,13 @@ This program takes the path to your MIDI file as well as various optional argume
 
 ```
 Usage: rhyme [-hV] [--allow-tuning-mutation] [--list-tunings] [-o[=<file>]]
-             [-g=<count>] [-m=<rate>] [-p=<size>] [-s=<rate>] [-t=<name>]
-             [<midi-file>]
+             [-c=<fret>] [-g=<count>] [-m=<rate>] [-p=<size>] [-s=<rate>]
+             [-t=<name>] [<midi-file>]
 Transcribe a MIDI file into guitar tablature.
       [<midi-file>]         MIDI file.
       --allow-tuning-mutation
                             Allow the optimiser to mutate the tuning.
+  -c, --capo=<fret>         Target capo fret.
   -g, --generations=<count> Number of generations (default : 500).
   -h, --help                Show this help message and exit.
       --list-tunings        List available tunings.
@@ -74,7 +75,7 @@ Transcribe a MIDI file into guitar tablature.
 
 The default values provided have been statistically tested to form a generally sensible configuration which maximises resulting tablature fitness whilst avoiding unnecessary performance impact. Songs with a long duration or high technical complexity can result in suboptimal tablature, so tuning these values *could* help. Generally for most pieces, 500 generations seems to be a suitable number to balance playability with a low runtime, but a larger number *should* result in a more optimal tablature. 
 
-The `--tuning` option will aim to generate a tablature in that target tuning, but if the MIDI song contains notes out of range of this tuning, then the program will default to valid alternatives. Moreover, the `--allow=tuning-mutation` option simply means that the system will attempt to generate new tunings outside of the defined set of 'standard' tunings (the `--list-tunings` option outputs a comprehensive list), which can result in musically odd tunings but potentially produces one optimal for the provided song (not generally recommended).
+The `--tuning` option will aim to generate a tablature in that target tuning, but if the MIDI song contains notes out of range of this tuning, then the program will default to valid alternatives. Moreover, the `--allow-tuning-mutation` option simply means that the system will attempt to generate new tunings outside of the defined set of 'standard' tunings (the `--list-tunings` option outputs a comprehensive list), which can result in musically odd tunings but potentially produces one optimal for the provided song (not generally recommended).
 
 ### IDE
 Set the program arguments in your run configuration to the path of your MIDI file as well as any desired options:

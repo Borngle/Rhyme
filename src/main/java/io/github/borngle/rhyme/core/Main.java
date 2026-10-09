@@ -78,7 +78,14 @@ public class Main implements Runnable {
             description = "Target tuning.",
             paramLabel = "<name>"
     )
-    private String tuningName;
+    private String targetTuningName;
+
+    @CommandLine.Option(
+            names = {"-c", "--capo"},
+            description = "Target capo fret.",
+            paramLabel = "<fret>"
+    )
+    private Integer targetCapoFret;
 
     @CommandLine.Option(
             names = "--list-tunings",
@@ -118,8 +125,8 @@ public class Main implements Runnable {
         ArrayList<ArrayList<Note>> songTracks = Reader.readSong(song);
         StringBuilder songTablature = new StringBuilder();
         int[] targetTuning = null;
-        if(tuningName != null) {
-            targetTuning = getTuning(tuningName);
+        if(targetTuningName != null) {
+            targetTuning = getTuning(targetTuningName);
         }
         for(int i = 0; i < songTracks.size(); i++) {
             ArrayList<Note> track = songTracks.get(i);
@@ -127,8 +134,11 @@ public class Main implements Runnable {
                 songTablature.append("\nTrack: ").append(i + 1).append("\n"); // Formatting for multi-track songs
             }
             Tablature tablature = optimise(new Optimiser(populationSize, track, mutationRate, targetTuning, allowTuningMutation), generations, selectionPressure, 0.2);
+            if(targetCapoFret != null && tablature.isValidCapo(targetCapoFret)) {
+                tablature.setCapoFret(targetCapoFret);
+            }
             int capo = tablature.getCapoFret();
-            if(tablature.getCapoFret() > 0) {
+            if(capo > 0) {
                 tablature.transpose();
                 songTablature.append("Capo: ").append(capo).append("\n");
             }
@@ -140,32 +150,32 @@ public class Main implements Runnable {
     private void validate() {
         if(song == null) {
             throw new CommandLine.ParameterException(
-                    new CommandLine(this),
-                    "Error: Missing required parameter <midi-file>"
+                    new CommandLine(this), "Error: Missing required parameter <midi-file>"
             );
         }
         if(generations <= 0) {
             throw new CommandLine.ParameterException(
-                    new CommandLine(this),
-                    "Error: Number of generations must be greater than 0"
+                    new CommandLine(this), "Error: Number of generations must be greater than 0"
             );
         }
         if(populationSize <= 1) {
             throw new CommandLine.ParameterException(
-                    new CommandLine(this),
-                    "Error: Population size must be greater than 1"
+                    new CommandLine(this), "Error: Population size must be greater than 1"
             );
         }
         if(mutationRate < 0 || mutationRate > 1) {
             throw new CommandLine.ParameterException(
-                    new CommandLine(this),
-                    "Error: Mutation rate must be between 0 and 1"
+                    new CommandLine(this), "Error: Mutation rate must be between 0 and 1"
             );
         }
         if(selectionPressure <= 0 || selectionPressure > 1) {
             throw new CommandLine.ParameterException(
-                    new CommandLine(this),
-                    "Error: Selection pressure must be between 0 and 1"
+                    new CommandLine(this), "Error: Selection pressure must be greater than 0 and less than 1"
+            );
+        }
+        if(targetCapoFret != null && (targetCapoFret < 0 || targetCapoFret > 7)) {
+            throw new CommandLine.ParameterException(
+                    new CommandLine(this), "Error: Target capo fret must be between 0 and 7"
             );
         }
     }
@@ -243,6 +253,7 @@ public class Main implements Runnable {
      * @param songTablature the rendered tablature
      */
     public void output(String songName, String songTablature) {
+        // TODO: include tuning name in output
         StringBuilder output = new StringBuilder();
         output.append("Song: ").append(songName).append("\n");
         output.append("Timing: ").append(timeSignature[0]).append("/").append(timeSignature[1]).append("\n");
