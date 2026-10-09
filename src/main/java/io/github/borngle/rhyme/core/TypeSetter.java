@@ -23,6 +23,8 @@ E |0----0---0-0---|
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
 import static io.github.borngle.rhyme.core.Main.resolution;
@@ -90,16 +92,14 @@ public class TypeSetter {
     }
 
     /**
-     * Writes a {@code String} tablature and song metadata to a file.
+     * Writes the {@code output} to a specified {@code Path}.
      *
-     * <p>Uses {@code FileWriter} to create or overwrite a text file.</p>
-     *
-     * @param song the song name
-     * @param tablature the song tablature
+     * @param path where the file is written to
+     * @param output the song tablature and metadata
      **/
-    public static void writeFile(String song, String tablature) {
-        try(FileWriter fileWriter = new FileWriter(song + ".txt", false)) {
-            fileWriter.write("Song: " + song + "\n" + "Timing: " + timeSignature[0] + "/" + timeSignature[1] + "\n\n" + tablature);
+    public static void writeFile(Path path, String output) {
+        try {
+            Files.writeString(path, output);
         }
         catch(IOException e) {
             e.printStackTrace();

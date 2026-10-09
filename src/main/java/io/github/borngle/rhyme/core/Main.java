@@ -16,6 +16,7 @@ import picocli.CommandLine;
 
 import javax.sound.midi.*;
 import java.io.File;
+import java.nio.file.Path;
 import java.util.*;
 
 @CommandLine.Command(
@@ -92,10 +93,12 @@ public class Main implements Runnable {
     private boolean allowTuningMutation;
 
     @CommandLine.Option(
-            names = {"-w", "--write"},
-            description = "Write output to a file."
+            names = {"-o", "--output"},
+            description = "Output to a file.",
+            arity = "0..1",
+            paramLabel = "<file>"
     )
-    private boolean write;
+    private Path path;
 
     public static void main(String[] args) {
         int exitCode = new CommandLine(new Main()).execute(args);
@@ -234,17 +237,22 @@ public class Main implements Runnable {
     }
 
     /**
-     * Prints and writes tablature to a text file.
+     * Prints final output tablature and optionally writes to a text file.
      *
      * @param songName the name of the supplied MIDI file
      * @param songTablature the rendered tablature
      */
     public void output(String songName, String songTablature) {
-        System.out.println("Song: " + songName);
-        System.out.println("Timing: " + timeSignature[0] + "/" + timeSignature[1]);
-        System.out.println(songTablature);
-        if(write) {
-            TypeSetter.writeFile(songName, songTablature);
+        StringBuilder output = new StringBuilder();
+        output.append("Song: ").append(songName).append("\n");
+        output.append("Timing: ").append(timeSignature[0]).append("/").append(timeSignature[1]).append("\n");
+        output.append(songTablature);
+        System.out.print(output);
+        if(path != null) {
+            if(path.toString().isEmpty()) { // In case no file path is provided after the -o flag
+                path = Path.of(songName + ".txt");
+            }
+            TypeSetter.writeFile(path, String.valueOf(output));
         }
     }
 }
